@@ -259,10 +259,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 - LinkedIn: https://www.linkedin.com/in/haydenfernandes
 - GitHub: https://github.com/hfa90
 
-## 🙏 Agradecimentos
-
-- Deus
-
 ---------------------------------------------------------------------------------------
 
 ⭐ Se este projeto te ajudou, considere dar uma estrela no repositório!

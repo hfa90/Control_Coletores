@@ -1,4 +1,4 @@
-# Sistema de Controle de Coletores - CENTRO DE DISTRIBUIÇÃO CD-AM DROGASIL
+# Sistema de Controle de Coletores - CENTRO DE DISTRIBUIÇÃO CD-AM D**GASIL
 
 Um sistema web moderno para gerenciamento e controle de coletores de código de barras em centros de distribuição.
 

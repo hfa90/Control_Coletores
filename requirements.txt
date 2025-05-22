@@ -1,0 +1,21 @@
+# Dependências do Sistema de Controle de Coletores
+
+# Framework Web
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Banco de Dados
+psycopg2-binary==2.9.7
+
+# Utilitários
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Desenvolvimento (opcional)
+pytest==7.4.2
+pytest-flask==1.2.0
+black==23.9.1
+flake8==6.1.0
+
+# Segurança
+cryptography==41.0.7

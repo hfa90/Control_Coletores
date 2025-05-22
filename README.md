@@ -1,4 +1,14 @@
-# Sistema de Controle de Coletores - CENTRO DE DISTRIBUIÇÃO CD-AM D**GASIL
+# Sistema de Controle de Coletores - CENTRO DE DISTRIBUIÇÃO CD-AM
+
+
+![Captura de tela 2025-04-21 221554](https://github.com/user-attachments/assets/0f5056d0-23b9-4b04-99bd-74831b00afce)
+
+![Tela Admin](https://github.com/user-attachments/assets/9bedfff5-4ba7-497b-9a4c-3fbde8daeefc)
+
+![Tel_Login](https://github.com/user-attachments/assets/723d146e-f3b7-479b-b3f0-f069ef0e439c)
+
+
+
 
 Um sistema web moderno para gerenciamento e controle de coletores de código de barras em centros de distribuição.
 

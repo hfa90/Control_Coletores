@@ -89,7 +89,7 @@ sistema-coletores/
 
 ### 1. Clone o repositório
 ```bash
-git clone https://github.com/seu-usuario/sistema-coletores.git
+git clone https://github.com/hf90/sistema-coletores.git
 cd sistema-coletores
 ```
 

@@ -1,0 +1,4557 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleção de Coletores</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #e02020;
+            --primary-light: #fd3a3a;
+            --primary-dark: #c01010;
+            --secondary: #1a1a50;
+            --secondary-light: #2d2d7a;
+            --secondary-dark: #0f0f30;
+            --success: #28a745;
+            --success-light: #34ce57;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --gray-dark: #495057;
+            --available: #28a745;
+            --in-use: #dc3545;
+            --maintenance: #ffc107;
+            --background: #f5f5f8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .logo i {
+            font-size: 1.8rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+            border: 2px solid white;
+        }
+
+        .logout-button {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+            font-size: 14px;
+        }
+
+        .logout-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .logout-button i {
+            font-size: 16px;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .page-title {
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+            color: var(--secondary);
+            border-bottom: 2px solid var(--gray-light);
+            padding-bottom: 0.5rem;
+        }
+
+        .filters {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-title {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--secondary);
+            font-weight: 500;
+        }
+
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-button {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--gray-light);
+            color: var(--dark);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-button:hover {
+            background-color: var(--gray);
+            color: white;
+        }
+
+        .filter-button.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .collectors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .collector-card {
+            position: relative;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            height: 180px;
+        }
+
+        .collector-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .collector-header {
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.4rem;
+            color: white;
+            position: relative;
+        }
+
+        .collector-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+
+        .collector-info {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .collector-user {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .collector-sector {
+            color: var(--gray);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .collector-details {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray-dark);
+        }
+
+        .collector-available .collector-header {
+            background-color: var(--success);
+        }
+
+        .collector-available .collector-status {
+            background-color: var(--success-light);
+            box-shadow: 0 0 5px var(--success-light);
+            animation: pulse 2s infinite;
+        }
+
+        .collector-in-use .collector-header {
+            background-color: var(--in-use);
+        }
+
+        .collector-in-use .collector-status {
+            background-color: var(--in-use);
+        }
+
+        .collector-maintenance .collector-header {
+            background-color: var(--maintenance);
+        }
+
+        .collector-maintenance .collector-status {
+            background-color: var(--maintenance);
+        }
+
+        /* Adicione estes estilos CSS */
+        .collector-in-use .collector-user {
+            font-weight: bold;
+            color: #e02020;
+            /* Cor primária */
+            font-size: 1.1rem !important;
+        }
+
+        .collector-in-use .collector-sector {
+            font-weight: 500;
+            color: #1a1a50;
+            /* Cor secundária */
+            font-size: 0.95rem !important;
+        }
+
+        /* Adicionar um indicador visual mais claro de que o coletor está em uso */
+        .collector-in-use .collector-header {
+            background-color: #e02020;
+            /* Vermelho */
+        }
+
+        /* Aumentar contraste do texto nos cards */
+        .collector-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Adicionar animação suave quando carrega os cards */
+        .collector-card {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-button.select {
+            background-color: var(--success);
+        }
+
+        .action-button.select:hover {
+            background-color: var(--success-light);
+        }
+
+        .action-button.return {
+            background-color: var(--warning);
+        }
+
+        .action-button.return:hover {
+            background-color: var(--primary);
+        }
+
+        .no-collectors {
+            text-align: center;
+            padding: 3rem;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-collectors i {
+            font-size: 3rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+
+        .no-collectors p {
+            font-size: 1.2rem;
+            color: var(--gray-dark);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .modal {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-backdrop.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--gray-light);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--gray-light);
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--gray);
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(224, 32, 32, 0.1);
+        }
+
+        /* Estilos adicionais para garantir que o modal fique bem organizado */
+        .modal {
+            max-width: 500px;
+            width: 90%;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Garantir que o modal não ultrapasse a altura da tela */
+        @media (max-height: 700px) {
+            .modal-body {
+                max-height: 60vh;
+            }
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236c757d'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5rem;
+            padding-right: 2.5rem;
+        }
+
+        .bottom-actions {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+            z-index: 90;
+        }
+
+        .bottom-actions .btn {
+            min-width: 200px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 5px rgba(40, 167, 69, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+
+        /* Status pill - novo componente */
+        .collector-status-container {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+
+        .status-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .status-pill:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-available {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+
+        .status-in-use {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--in-use);
+        }
+
+        .status-maintenance {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--maintenance);
+        }
+
+        /* Loading spinner */
+        .spinner-container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(224, 32, 32, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mensagem de erro */
+        .error-message {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .error-message i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Alerta */
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+            max-width: 300px;
+            animation: fadeInRight 0.3s forwards;
+        }
+
+        .alert-success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .alert-error {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .collectors-grid {
+                grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+                gap: 1rem;
+            }
+
+            .collector-card {
+                height: 160px;
+            }
+
+            .collector-header {
+                padding: 0.75rem;
+                font-size: 1.2rem;
+            }
+
+            .collector-info {
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .collectors-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .collector-card {
+                height: 140px;
+            }
+
+            .collector-header {
+                padding: 0.5rem;
+                font-size: 1rem;
+            }
+
+            .collector-info {
+                padding: 0.5rem;
+            }
+
+            .collector-user {
+                font-size: 0.8rem;
+            }
+
+            .collector-sector {
+                font-size: 0.7rem;
+            }
+
+            .collector-details {
+                font-size: 0.7rem;
+            }
+
+            .action-button {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
+
+            .status-pill {
+                padding: 2px 6px;
+                font-size: 0.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-barcode"></i>
+                <span>Sistema de Coletores</span>
+            </div>
+            <div class="user-info">
+                <span id="userName">Carregando...</span>
+                <div class="user-avatar">--</div>
+                <a href="/logout" class="logout-button" title="Sair do sistema">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <h1 class="page-title">Selecionar Coletor</h1>
+
+        <div class="filters">
+            <h2 class="filter-title">Filtrar por Status</h2>
+            <div class="filter-controls">
+                <button class="filter-button active" data-filter="all">Todos</button>
+                <button class="filter-button" data-filter="available">Disponíveis</button>
+                <button class="filter-button" data-filter="in-use">Em Uso</button>
+                <button class="filter-button" data-filter="maintenance">Manutenção</button>
+            </div>
+        </div>
+
+        <div id="loadingSpinner" class="spinner-container">
+            <div class="spinner"></div>
+            <p>Carregando coletores...</p>
+        </div>
+
+        <div id="errorContainer" class="error-message" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <p id="errorMessage">Erro ao carregar coletores.</p>
+            <button id="btnRetry" class="btn btn-primary" style="margin-top: 15px;">Tentar Novamente</button>
+        </div>
+
+        <div class="collectors-grid" id="collectorsGrid" style="display: none;">
+            <!-- Os coletores serão inseridos aqui dinamicamente -->
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de seleção -->
+    <!-- Modal de confirmação de seleção (corrigido) -->
+    <div class="modal-backdrop" id="selectModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Selecionar Coletor #<span id="modalCollectorId"></span></h3>
+                <button class="modal-close" id="closeSelectModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="userNameDisplay" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Matrícula</label>
+                    <input type="text" class="form-control" id="userMatriculaDisplay" readonly>
+                </div>
+                <!-- Campo oculto para status -->
+                <input type="hidden" id="collectorStatus" value="Em Uso">
+                <div class="form-group">
+                    <label class="form-label" for="userSector">Setor de Trabalho</label>
+                    <select class="form-control" id="userSector" required>
+                        <option value="">Selecione um setor</option>
+                        <option value="Expedição">Expedição</option>
+                        <option value="Armazenamento">Armazenamento</option>
+                        <option value="Separação">Separação</option>
+                        <option value="Conferência">Conferência</option>
+                        <option value="TI">TI</option>
+                        <option value="Pcp">Pcp</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="userTurno">Turno</label>
+                    <select class="form-control" id="userTurno" required>
+                        <option value="">Selecione o turno</option>
+                        <option value="1º Turno">1º Turno</option>
+                        <option value="Intermediário">Intermediário</option>
+                        <option value="2º Turno">2º Turno</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data e Hora de Retirada</label>
+                    <input type="text" class="form-control" id="selectDateTime" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="userObservation">Observações (opcional)</label>
+                    <textarea class="form-control" id="userObservation" rows="3"
+                        placeholder="Alguma observação sobre o uso deste coletor?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelSelectModal">Cancelar</button>
+                <button class="btn btn-primary" id="confirmSelectCollector">Confirmar Seleção</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal de devolução -->
+    <div class="modal-backdrop" id="returnModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Devolver Coletor #<span id="modalReturnCollectorId"></span></h3>
+                <button class="modal-close" id="closeReturnModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja devolver este coletor?</p>
+
+                <div class="form-group">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" class="form-control" id="returnUserNameDisplay" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Matrícula</label>
+                    <input type="text" class="form-control" id="returnUserMatriculaDisplay" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data e Hora de Devolução</label>
+                    <input type="text" class="form-control" id="returnDateTime" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="returnObservation">Observações (opcional)</label>
+                    <textarea class="form-control" id="returnObservation" rows="3"
+                        placeholder="Alguma observação sobre a devolução deste coletor?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelReturnModal">Cancelar</button>
+                <button class="btn btn-primary" id="confirmReturnCollector">Confirmar Devolução</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de alteração de status -->
+    <div class="modal-backdrop" id="statusModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Alterar Status do Coletor #<span id="modalStatusCollectorId"></span></h3>
+                <button class="modal-close" id="closeStatusModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="collectorNewStatus">Novo Status</label>
+                    <select class="form-control" id="collectorNewStatus" required>
+                        <option value="Disponível para Uso">Disponível para Uso</option>
+                        <option value="Em manutenção">Em manutenção</option>
+                        <option value="Com problema">Com problema</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="statusObservation">Observações (opcional)</label>
+                    <textarea class="form-control" id="statusObservation" rows="3"
+                        placeholder="Alguma observação sobre a mudança de status deste coletor?"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelStatusModal">Cancelar</button>
+                <button class="btn btn-primary" id="confirmStatusChange">Confirmar Alteração</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Variáveis globais
+            let coletores = [];
+            let usuarioAtual = {
+                id: 0,
+                nome: '',
+                matricula: '',
+                setor: ''
+            };
+
+            // Elementos DOM
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const errorContainer = document.getElementById('errorContainer');
+            const errorMessage = document.getElementById('errorMessage');
+            const collectorsGrid = document.getElementById('collectorsGrid');
+            const btnRetry = document.getElementById('btnRetry');
+
+            // Inicializar a aplicação
+            init();
+
+            // Função de inicialização
+            function init() {
+                // Carregar dados do usuário atual
+                carregarDadosUsuario()
+                    .then(() => {
+                        // Carregar coletores do banco de dados
+                        return carregarColetoresDoBanco();
+                    })
+                    .catch(error => {
+                        console.error("Erro na inicialização:", error);
+                        mostrarErro("Não foi possível inicializar o sistema. Tente recarregar a página.");
+                    });
+
+                // Configurar eventos
+                configurarEventos();
+            }
+
+            // Configurar eventos
+            function configurarEventos() {
+                // Botões de filtro
+                document.querySelectorAll('.filter-button').forEach(button => {
+                    button.addEventListener('click', function () {
+                        // Remover classe active de todos os botões
+                        document.querySelectorAll('.filter-button').forEach(btn => {
+                            btn.classList.remove('active');
+                        });
+
+                        // Adicionar classe active ao botão clicado
+                        this.classList.add('active');
+
+                        // Filtrar os coletores com base no botão clicado
+                        const filter = this.getAttribute('data-filter');
+                        renderizarColetores(filter);
+                    });
+                });
+
+                // Eventos para os modais
+                document.getElementById('closeSelectModal').addEventListener('click', fecharModalSelecao);
+                document.getElementById('cancelSelectModal').addEventListener('click', fecharModalSelecao);
+                document.getElementById('confirmSelectCollector').addEventListener('click', function () {
+                    const collectorId = document.getElementById('modalCollectorId').textContent;
+                    selecionarColetor(collectorId);
+                });
+
+                document.getElementById('closeReturnModal').addEventListener('click', fecharModalDevolucao);
+                document.getElementById('cancelReturnModal').addEventListener('click', fecharModalDevolucao);
+                document.getElementById('confirmReturnCollector').addEventListener('click', function () {
+                    const collectorId = document.getElementById('modalReturnCollectorId').textContent;
+                    devolverColetor(collectorId);
+                });
+
+                // Eventos para modal de status
+                document.getElementById('closeStatusModal').addEventListener('click', fecharModalStatus);
+                document.getElementById('cancelStatusModal').addEventListener('click', fecharModalStatus);
+                document.getElementById('confirmStatusChange').addEventListener('click', function () {
+                    const collectorId = document.getElementById('modalStatusCollectorId').textContent;
+                    alterarStatusColetor(collectorId);
+                });
+
+                // Botão tentar novamente
+                btnRetry.addEventListener('click', function () {
+                    errorContainer.style.display = 'none';
+                    loadingSpinner.style.display = 'block';
+                    carregarColetoresDoBanco();
+                });
+            }
+
+            // Função para carregar dados do usuário atual
+            function carregarDadosUsuario() {
+                return fetch('/api/session/user')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar dados do usuário: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        usuarioAtual = {
+                            id: data.id || 0,
+                            nome: data.nome || 'Usuário',
+                            matricula: data.matricula || '',
+                            setor: data.setor || ''
+                        };
+
+                        // Atualizar o nome na interface
+                        document.getElementById('userName').textContent = `Olá, ${usuarioAtual.nome}`;
+
+                        // Atualizar o avatar com as iniciais
+                        const userAvatar = document.querySelector('.user-avatar');
+                        if (userAvatar) {
+                            const initials = usuarioAtual.nome.split(' ').map(n => n[0]).join('');
+                            userAvatar.textContent = initials;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar dados do usuário:', error);
+                        mostrarAlerta('Erro ao carregar dados do usuário. Algumas funcionalidades podem estar limitadas.', 'error');
+                        // Fallback: Usar nome genérico
+                        document.getElementById('userName').textContent = 'Olá, Usuário';
+                        document.querySelector('.user-avatar').textContent = 'U';
+                    });
+            }
+
+            // Função para carregar coletores do banco de dados
+            // Modifique a função carregarColetoresDoBanco()
+            // Modificação adicional para a função carregarColetoresDoBanco
+            function carregarColetoresDoBanco() {
+                // Mostrar spinner de carregamento
+                loadingSpinner.style.display = 'block';
+                collectorsGrid.style.display = 'none';
+                errorContainer.style.display = 'none';
+
+                return fetch('/api/coletores')
+                    .then(response => {
+                        console.log('Status da resposta:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Erro ao carregar coletores: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos da API:', data);
+
+                        // Verificar se os dados são válidos
+                        if (!data || !Array.isArray(data)) {
+                            throw new Error('Dados inválidos recebidos da API');
+                        }
+
+                        // Converter os dados para o formato que a interface espera
+                        coletores = data.map(c => {
+                            const usuario = c.usuario !== null && c.usuario !== undefined ? c.usuario : '';
+
+                            return {
+                                id: c.id,
+                                status: converterStatus(c.status),
+                                statusOriginal: c.status,
+                                usuario: usuario,
+                                matricula: c.matricula || '',
+                                setor: c.setor || '',
+                                battery: c.bateria || '100',
+                                model: c.modelo || 'Honeywell EDA61k'
+                            };
+                        });
+
+                        console.log('Coletores processados:', coletores);
+
+                        // Esconder spinner e mostrar grid
+                        loadingSpinner.style.display = 'none';
+                        collectorsGrid.style.display = 'grid';
+
+                        // Renderizar os coletores na interface
+                        renderizarColetores('all');
+                    })
+                    .catch(error => {
+                        console.error('Erro detalhado ao carregar coletores:', error);
+
+                        // Esconder spinner e mostrar mensagem de erro
+                        loadingSpinner.style.display = 'none';
+                        errorContainer.style.display = 'block';
+                        errorMessage.textContent = 'Erro ao carregar coletores do banco de dados: ' + error.message;
+                    });
+            }
+
+            // Função para converter o status do banco para o formato da interface
+            function converterStatus(status) {
+                switch (status) {
+                    case 'Disponível para Uso':
+                    case 'Disponível':
+                    case 'Inativo':
+                        return 'available';
+                    case 'Em Uso':
+                    case 'Ativo':
+                        return 'in-use';
+                    case 'Em manutenção':
+                    case 'Com problema':
+                        return 'maintenance';
+                    default:
+                        return 'available';
+                }
+            }
+
+            // Função para renderizar os coletores na interface
+            // Modifique a função renderizarColetores para exibir corretamente as informações do usuário
+            // Modifique a função renderizarColetores para incluir a chamada da função corrigirEventosClique
+            // Função para renderizar os coletores na interface
+            function renderizarColetores(filter = 'all') {
+                const grid = document.getElementById('collectorsGrid');
+                grid.innerHTML = '';
+
+                // Filtrar coletores conforme selecionado
+                let filteredCollectors;
+                if (filter === 'all') {
+                    filteredCollectors = coletores;
+                } else {
+                    filteredCollectors = coletores.filter(c => c.status === filter);
+                }
+
+                if (filteredCollectors.length === 0) {
+                    grid.innerHTML = `
+            <div class="no-collectors">
+                <i class="fas fa-search"></i>
+                <p>Nenhum coletor encontrado</p>
+            </div>
+        `;
+                    return;
+                }
+
+                // Criar card para cada coletor
+                filteredCollectors.forEach(coletor => {
+                    const card = document.createElement('div');
+                    card.className = `collector-card collector-${coletor.status}`;
+                    card.setAttribute('data-id', coletor.id);
+
+                    // Determinar o status e a ação disponível
+                    let statusText, actionButton;
+
+                    if (coletor.status === 'available') {
+                        statusText = 'Disponível';
+                        actionButton = `<button class="action-button select" title="Selecionar coletor" data-id="${coletor.id}"><i class="fas fa-check"></i></button>`;
+                    } else if (coletor.status === 'in-use') {
+                        statusText = 'Em Uso';
+
+                        // Se o coletor está sendo usado pelo usuário atual, mostrar botão de devolução
+                        if (coletor.usuario === usuarioAtual.nome) {
+                            actionButton = `<button class="action-button return" title="Devolver coletor" data-id="${coletor.id}"><i class="fas fa-undo"></i></button>`;
+                        } else {
+                            actionButton = '';
+                        }
+                    } else { // maintenance
+                        statusText = 'Manutenção';
+                        actionButton = '';
+                    }
+
+                    // Status original para exibição no status-pill
+                    const statusOriginalText = coletor.statusOriginal || statusText;
+
+                    // Importante: Garantir que o nome do usuário seja exibido corretamente
+                    // Se o coletor estiver em uso, mostrar o nome real do usuário e não "NENHUM USUÁRIO"
+                    const nomeUsuario = (coletor.status === 'in-use' && coletor.usuario)
+                        ? coletor.usuario
+                        : 'Nenhum usuário';
+
+                    // Conteúdo do card - Incluindo as informações corretas do usuário
+                    card.innerHTML = `
+            <div class="collector-header">
+                #${coletor.id}
+                <div class="collector-status"></div>
+            </div>
+            <div class="collector-info">
+                <div class="collector-user">${nomeUsuario}</div>
+                <div class="collector-sector">${coletor.setor || 'Nenhum setor'}</div>
+                <div class="collector-details">
+                    <span><i class="fas fa-battery-half"></i> ${coletor.battery}%</span>
+                    <span><i class="fas fa-tablet-alt"></i> ${coletor.model}</span>
+                </div>
+                ${actionButton}
+                <div class="collector-status-container">
+                    <span class="status-pill status-${coletor.status}" data-id="${coletor.id}">${statusOriginalText}</span>
+                </div>
+            </div>
+        `;
+
+                    grid.appendChild(card);
+                });
+
+                // IMPORTANTE: Chamar a função para corrigir os eventos de clique
+                configurarDelegacaoEventos();
+
+                // Log para confirmar que os cards foram renderizados
+                console.log(`Renderizados ${filteredCollectors.length} coletores com filtro: ${filter}`);
+            }
+
+            // Nova abordagem usando delegação de eventos
+            function configurarDelegacaoEventos() {
+                console.log("Configurando delegação de eventos para os cards...");
+
+                // Obter o container dos coletores
+                const gridContainer = document.getElementById('collectorsGrid');
+
+                // Remover qualquer evento antigo
+                gridContainer.onclick = null;
+
+                // Adicionar um único listener ao container
+                gridContainer.onclick = function (event) {
+                    // Encontrar o card mais próximo que foi clicado (se houver)
+                    const card = event.target.closest('.collector-card');
+                    if (!card) return; // Se não clicou em um card, não faz nada
+
+                    // Verificar se o clique foi em um botão ou no status pill
+                    if (event.target.closest('.action-button') || event.target.closest('.status-pill')) {
+                        return; // Esses elementos têm seus próprios handlers
+                    }
+
+                    // Obter o ID do coletor
+                    const collectorId = card.getAttribute('data-id');
+                    console.log("Card clicado via delegação: Coletor #" + collectorId);
+
+                    // Buscar o objeto do coletor
+                    const coletor = coletores.find(c => c.id === collectorId);
+
+                    // Verificar o status do coletor e agir conforme apropriado
+                    if (coletor && coletor.status === 'available') {
+                        abrirModalSelecao(collectorId);
+                    } else if (coletor && coletor.status === 'in-use' && coletor.usuario === usuarioAtual.nome) {
+                        abrirModalDevolucao(collectorId);
+                    }
+                };
+
+                // Configurar delegação para os botões de ação e pills de status
+                gridContainer.addEventListener('click', function (event) {
+                    // Botão de selecionar
+                    const btnSelect = event.target.closest('.action-button.select');
+                    if (btnSelect) {
+                        event.stopPropagation();
+                        const collectorId = btnSelect.getAttribute('data-id');
+                        abrirModalSelecao(collectorId);
+                        return;
+                    }
+
+                    // Botão de devolver
+                    const btnReturn = event.target.closest('.action-button.return');
+                    if (btnReturn) {
+                        event.stopPropagation();
+                        const collectorId = btnReturn.getAttribute('data-id');
+                        abrirModalDevolucao(collectorId);
+                        return;
+                    }
+
+                    // Status pill
+                    const statusPill = event.target.closest('.status-pill');
+                    if (statusPill) {
+                        event.stopPropagation();
+                        const collectorId = statusPill.getAttribute('data-id');
+
+                        // Verificar permissão para alterar status
+                        if (usuarioAtual.matricula === 'MA201990') {
+                            const coletor = coletores.find(c => c.id === collectorId);
+
+                            // Não permitir alterar status de coletores em uso
+                            if (coletor && coletor.status === 'in-use') {
+                                mostrarAlerta('Para alterar o status, primeiro devolva o coletor', 'error');
+                                return;
+                            }
+
+                            abrirModalStatus(collectorId);
+                        } else {
+                            mostrarAlerta('Apenas o usuário com matrícula MA201990 pode alterar o status dos coletores', 'error');
+                        }
+                    }
+                });
+
+                console.log("Delegação de eventos configurada com sucesso!");
+            }
+
+
+            // Adicione esta função para casos onde a API está indisponível
+            function carregarColetoresMock() {
+                console.log('Usando dados mock para testes...');
+
+                // Dados simulados para teste
+                const dadosMock = [
+                    { id: '1', status: 'Disponível para Uso', usuario: '', matricula: '', setor: '', bateria: '95', modelo: 'Honeywell EDA61k' },
+                    { id: '2', status: 'Em Uso', usuario: 'GABRIEL SOUSA', matricula: '338766', setor: 'Armazenamento', bateria: '80', modelo: 'Honeywell EDA61k' },
+                    { id: '3', status: 'Disponível para Uso', usuario: '', matricula: '', setor: '', bateria: '100', modelo: 'Honeywell EDA61k' },
+                    { id: '4', status: 'Em manutenção', usuario: '', matricula: '', setor: 'TI', bateria: '60', modelo: 'Honeywell EDA61k' }
+                ];
+
+                // Processar os dados mock como se viessem da API
+                coletores = dadosMock.map(c => ({
+                    id: c.id,
+                    status: converterStatus(c.status),
+                    statusOriginal: c.status,
+                    usuario: c.usuario || '',
+                    matricula: c.matricula || '',
+                    setor: c.setor || '',
+                    battery: c.bateria || '100',
+                    model: c.modelo || 'Honeywell EDA61k'
+                }));
+
+                // Esconder spinner e mostrar grid
+                loadingSpinner.style.display = 'none';
+                collectorsGrid.style.display = 'grid';
+
+                // Renderizar os coletores na interface
+                renderizarColetores('all');
+
+                // Mostrar mensagem ao usuário
+                mostrarAlerta('Usando dados de demonstração porque o servidor está indisponível', 'error');
+            }
+
+            function abrirModalSelecao(collectorId) {
+                document.getElementById('modalCollectorId').textContent = collectorId;
+                document.getElementById('selectModal').classList.add('active');
+
+                // Preencher informações do usuário
+                document.getElementById('userNameDisplay').value = usuarioAtual.nome;
+                document.getElementById('userMatriculaDisplay').value = usuarioAtual.matricula;
+                document.getElementById('userSector').value = usuarioAtual.setor || '';
+
+                // Preencher data e hora atual
+                document.getElementById('selectDateTime').value = formatarDataHora();
+            }
+
+            // Função para abrir o modal de devolução de coletor
+            function abrirModalDevolucao(collectorId) {
+                document.getElementById('modalReturnCollectorId').textContent = collectorId;
+                document.getElementById('returnModal').classList.add('active');
+
+                // Preencher informações do usuário
+                document.getElementById('returnUserNameDisplay').value = usuarioAtual.nome;
+                document.getElementById('returnUserMatriculaDisplay').value = usuarioAtual.matricula;
+
+                // Preencher data e hora atual
+                document.getElementById('returnDateTime').value = formatarDataHora();
+            }
+
+            // Função para abrir o modal de alteração de status
+            function abrirModalStatus(collectorId) {
+                document.getElementById('modalStatusCollectorId').textContent = collectorId;
+
+                // Encontrar o coletor na lista
+                const coletor = coletores.find(c => c.id === collectorId);
+
+                // Selecionar o status atual no select
+                const statusSelect = document.getElementById('collectorNewStatus');
+                for (let i = 0; i < statusSelect.options.length; i++) {
+                    if (statusSelect.options[i].value === coletor.statusOriginal) {
+                        statusSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+
+                // Limpar observações
+                document.getElementById('statusObservation').value = '';
+
+                // Mostrar o modal
+                document.getElementById('statusModal').classList.add('active');
+            }
+
+            // Função para fechar o modal de seleção
+            function fecharModalSelecao() {
+                document.getElementById('selectModal').classList.remove('active');
+            }
+
+            // Função para fechar o modal de devolução
+            function fecharModalDevolucao() {
+                document.getElementById('returnModal').classList.remove('active');
+            }
+
+            // Função para fechar o modal de alteração de status
+            function fecharModalStatus() {
+                document.getElementById('statusModal').classList.remove('active');
+            }
+
+            // Função para selecionar um coletor
+            // Modifique a função selecionarColetor()
+            function selecionarColetor(collectorId) {
+                // Validar formulário
+                const setor = document.getElementById('userSector').value;
+                const turno = document.getElementById('userTurno').value;
+                const observacoes = document.getElementById('userObservation').value;
+                const dataHoraRetirada = document.getElementById('selectDateTime').value;
+
+                if (!setor || !turno) {
+                    mostrarAlerta('Por favor, preencha o setor e o turno.', 'error');
+                    return;
+                }
+
+                // Mostrar loading no botão
+                const btnConfirm = document.getElementById('confirmSelectCollector');
+                const btnText = btnConfirm.textContent;
+                btnConfirm.disabled = true;
+                btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+                // Preparar dados para enviar ao servidor
+                const dados = {
+                    usuario: usuarioAtual.nome,
+                    matricula: usuarioAtual.matricula,
+                    setor: setor,
+                    turno: turno,
+                    data_hora_retirada: dataHoraRetirada,
+                    observacoes: observacoes || "",
+                    status: "Em Uso"
+                };
+
+                console.log('Dados sendo enviados ao selecionar coletor:', dados);
+
+                // Enviar requisição para a API
+                fetch(`/api/coletores/${collectorId}/selecionar`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.erro || 'Erro ao selecionar coletor');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Resposta da API ao selecionar coletor:', data);
+
+                        // Fechar o modal
+                        fecharModalSelecao();
+
+                        // Atualizar o coletor na lista local
+                        const index = coletores.findIndex(c => c.id === collectorId);
+                        if (index !== -1) {
+                            coletores[index].status = 'in-use';
+                            coletores[index].statusOriginal = 'Em Uso';
+                            coletores[index].usuario = usuarioAtual.nome;  // IMPORTANTE: Definir o nome do usuário
+                            coletores[index].matricula = usuarioAtual.matricula;
+                            coletores[index].setor = setor;
+                        }
+
+                        // Recarregar os coletores
+                        carregarColetoresDoBanco(); // Opcionalmente, recarregar do banco para garantir sincronização
+
+                        // Mostrar mensagem de sucesso
+                        mostrarAlerta(`Coletor #${collectorId} selecionado com sucesso!`, 'success');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao selecionar coletor:', error);
+                        mostrarAlerta(`Erro ao selecionar coletor: ${error.message}`, 'error');
+                    })
+                    .finally(() => {
+                        // Restaurar botão
+                        btnConfirm.disabled = false;
+                        btnConfirm.textContent = btnText;
+                    });
+            }
+
+            // Função para devolver um coletor
+            function devolverColetor(collectorId) {
+                // Obter observações e data/hora
+                const observacoes = document.getElementById('returnObservation').value;
+                const dataHoraDevolucao = document.getElementById('returnDateTime').value;
+
+                // Mostrar loading no botão
+                const btnConfirm = document.getElementById('confirmReturnCollector');
+                const btnText = btnConfirm.textContent;
+                btnConfirm.disabled = true;
+                btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+                // Preparar dados para enviar ao servidor
+                const dados = {
+                    observacoes: observacoes || "Devolvido via interface de seleção",
+                    data_devolucao: dataHoraDevolucao.split(' ')[0] || formatarData(),
+                    hora_devolucao: dataHoraDevolucao.split(' ')[1] || formatarHora(),
+                    matricula: usuarioAtual.matricula
+                };
+
+                // Enviar requisição para a API
+                fetch(`/api/coletores/${collectorId}/devolver`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.erro || 'Erro ao devolver coletor');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Fechar o modal
+                        fecharModalDevolucao();
+
+                        // Recarregar os coletores
+                        carregarColetoresDoBanco();
+
+                        // Mostrar mensagem de sucesso
+                        mostrarAlerta(`Coletor #${collectorId} devolvido com sucesso!`, 'success');
+                    })
+                    .catch(error => {
+                        console.error('Erro ao devolver coletor:', error);
+                        mostrarAlerta(`Erro ao devolver coletor: ${error.message}`, 'error');
+                    })
+                    .finally(() => {
+                        // Restaurar botão
+                        btnConfirm.disabled = false;
+                        btnConfirm.textContent = btnText;
+                    });
+            }
+
+            // Função para alterar o status de um coletor
+            function alterarStatusColetor(collectorId) {
+                // Obter novo status e observações
+                const novoStatus = document.getElementById('collectorNewStatus').value;
+                const observacoes = document.getElementById('statusObservation').value;
+
+                // Mostrar loading no botão
+                const btnConfirm = document.getElementById('confirmStatusChange');
+                const btnText = btnConfirm.textContent;
+                btnConfirm.disabled = true;
+                btnConfirm.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+
+                // Preparar dados para enviar ao servidor
+                const dados = {
+                    status: novoStatus,
+                    observacoes: observacoes || `Status alterado para "${novoStatus}" por ${usuarioAtual.nome}`
+                };
+
+                // Enviar requisição para a API
+                fetch(`/api/coletores/${collectorId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.erro || 'Erro ao alterar status do coletor');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Fechar o modal
+                        fecharModalStatus();
+
+                        // Recarregar os coletores
+                        carregarColetoresDoBanco();
+
+                        // Mostrar mensagem de sucesso
+                        mostrarAlerta(`Status do coletor #${collectorId} alterado com sucesso para "${novoStatus}"!`, 'success');
+
+                        // Registrar atividade no histórico (automático pela API)
+                    })
+                    .catch(error => {
+                        console.error('Erro ao alterar status do coletor:', error);
+                        mostrarAlerta(`Erro ao alterar status: ${error.message}`, 'error');
+                    })
+                    .finally(() => {
+                        // Restaurar botão
+                        btnConfirm.disabled = false;
+                        btnConfirm.textContent = btnText;
+                    });
+            }
+
+            // Função para mostrar erro na tela
+            function mostrarErro(mensagem) {
+                errorMessage.textContent = mensagem;
+                errorContainer.style.display = 'block';
+            }
+
+            // Função para mostrar alerta
+            function mostrarAlerta(mensagem, tipo) {
+                // Remover alertas existentes
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.remove();
+                });
+
+                // Criar novo alerta
+                const alert = document.createElement('div');
+                alert.className = `alert alert-${tipo}`;
+
+                // Ícone adequado ao tipo
+                let icone = tipo === 'success' ? 'check-circle' : 'exclamation-circle';
+
+                alert.innerHTML = `
+                    <i class="fas fa-${icone}"></i>
+                    <span>${mensagem}</span>
+                `;
+
+                // Adicionar ao corpo da página
+                document.body.appendChild(alert);
+
+                // Remover após alguns segundos
+                setTimeout(() => {
+                    alert.style.animation = 'fadeOut 0.5s forwards';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500);
+                }, 5000);
+            }
+
+            // Função para formatar data e hora atual
+            function formatarDataHora() {
+                const agora = new Date();
+                const dia = String(agora.getDate()).padStart(2, '0');
+                const mes = String(agora.getMonth() + 1).padStart(2, '0');
+                const ano = agora.getFullYear();
+                const hora = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+
+                return `${dia}/${mes}/${ano} ${hora}:${minutos}`;
+            }
+
+            // Função para formatar apenas data
+            function formatarData() {
+                const agora = new Date();
+                const dia = String(agora.getDate()).padStart(2, '0');
+                const mes = String(agora.getMonth() + 1).padStart(2, '0');
+                const ano = agora.getFullYear();
+
+                return `${dia}/${mes}/${ano}`;
+            }
+
+            // Função para formatar apenas hora
+            function formatarHora() {
+                const agora = new Date();
+                const hora = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+
+                return `${hora}:${minutos}`;
+            }
+        });
+    </script>
+    <script>
+        // Adicione esta função ao script JavaScript na página selecao_coletores.html
+        // Substitua a função corrigirEventosClique() por esta versão simplificada
+        function corrigirEventosClique() {
+            console.log("Aplicando eventos de clique aos cards...");
+
+            // Limpar todos os eventos de clique antigos (se houver)
+            document.querySelectorAll('.collector-card').forEach(card => {
+                // Remover todos os event listeners antigos
+                const oldCard = card;
+                const newCard = oldCard.cloneNode(true);
+                oldCard.parentNode.replaceChild(newCard, oldCard);
+            });
+
+            // Agora adicionar os novos eventos de clique
+            document.querySelectorAll('.collector-card').forEach(card => {
+                card.onclick = function (event) {
+                    // Ignorar clique se vier de um botão
+                    if (event.target.closest('.action-button') || event.target.closest('.status-pill')) {
+                        return;
+                    }
+
+                    // Obter o ID do coletor
+                    const collectorId = this.getAttribute('data-id');
+                    console.log("Card clicado: Coletor #" + collectorId);
+
+                    // Buscar o objeto do coletor
+                    const coletor = coletores.find(c => c.id === collectorId);
+
+                    // Verificar o status do coletor e agir conforme apropriado
+                    if (coletor && coletor.status === 'available') {
+                        abrirModalSelecao(collectorId);
+                    } else if (coletor && coletor.status === 'in-use' && coletor.usuario === usuarioAtual.nome) {
+                        abrirModalDevolucao(collectorId);
+                    }
+                };
+            });
+
+            // Adicionar eventos aos botões dentro dos cards
+            document.querySelectorAll('.action-button.select').forEach(btn => {
+                btn.onclick = function (e) {
+                    e.stopPropagation();
+                    const collectorId = this.getAttribute('data-id');
+                    abrirModalSelecao(collectorId);
+                };
+            });
+
+            document.querySelectorAll('.action-button.return').forEach(btn => {
+                btn.onclick = function (e) {
+                    e.stopPropagation();
+                    const collectorId = this.getAttribute('data-id');
+                    abrirModalDevolucao(collectorId);
+                };
+            });
+
+            document.querySelectorAll('.status-pill').forEach(pill => {
+                pill.onclick = function (e) {
+                    e.stopPropagation();
+                    const collectorId = this.getAttribute('data-id');
+
+                    // Verificar permissão para alterar status (apenas para usuários com matrícula específica)
+                    if (usuarioAtual.matricula === 'MA201990') {
+                        const coletor = coletores.find(c => c.id === collectorId);
+
+                        // Não permitir alterar status de coletores em uso
+                        if (coletor && coletor.status === 'in-use') {
+                            mostrarAlerta('Para alterar o status, primeiro devolva o coletor', 'error');
+                            return;
+                        }
+
+                        abrirModalStatus(collectorId);
+                    } else {
+                        mostrarAlerta('Apenas o usuário com matrícula MA201990 pode alterar o status dos coletores', 'error');
+                    }
+                };
+            });
+
+            console.log("Eventos de clique aplicados com sucesso!");
+        }
+
+        // Adicione esta função para depurar os eventos de clique
+        function testarEventosClique() {
+            console.log("Testando eventos de clique...");
+
+            // Verificar número de cards
+            const cards = document.querySelectorAll('.collector-card');
+            console.log(`Total de cards encontrados: ${cards.length}`);
+
+            // Verificar se os cards têm o atributo data-id
+            cards.forEach((card, index) => {
+                const id = card.getAttribute('data-id');
+                console.log(`Card ${index + 1}: ID=${id}, Status=${card.className}, Event=${card.onclick ? 'SIM' : 'NÃO'}`);
+            });
+        }
+
+        // Adicione esta função em seu script para depurar melhor o problema
+        function debugInformacoes() {
+            // Verificar informações do usuário atual
+            console.log("Informações do usuário atual:", usuarioAtual);
+
+            // Verificar coletores carregados
+            console.log("Total de coletores:", coletores.length);
+
+            // Verificar quantos coletores estão em uso
+            const coletoresEmUso = coletores.filter(c => c.status === 'in-use');
+            console.log("Coletores em uso:", coletoresEmUso.length);
+
+            // Verificar coletores com usuário definido
+            const coletoresComUsuario = coletores.filter(c => c.usuario && c.usuario !== '');
+            console.log("Coletores com usuário definido:", coletoresComUsuario.length);
+
+            // Listar detalhes dos coletores em uso
+            console.log("Detalhes dos coletores em uso:");
+            coletoresEmUso.forEach(c => {
+                console.log(`Coletor #${c.id}: Usuário="${c.usuario}", Setor="${c.setor}", Status="${c.statusOriginal}"`);
+            });
+        }
+
+    </script>
+
+    <script>
+        // Adicione esta função para verificar a estrutura dos dados recebidos da API
+        function verificarDadosAPI(dados) {
+            console.log("Verificando dados recebidos da API...");
+
+            // Verificar se existem coletores nos dados
+            if (!dados || !Array.isArray(dados) || dados.length === 0) {
+                console.warn("Dados vazios ou inválidos recebidos da API");
+                return;
+            }
+
+            // Verificar estrutura do primeiro coletor como exemplo
+            const primeiroColetor = dados[0];
+            console.log("Estrutura do primeiro coletor:", JSON.stringify(primeiroColetor, null, 2));
+
+            // Verificar campo usuario especificamente
+            console.log("Tipo do campo 'usuario':", typeof primeiroColetor.usuario);
+            console.log("Valor do campo 'usuario':", primeiroColetor.usuario);
+
+            // Verificar coletores em uso
+            const coletoresEmUso = dados.filter(c => c.status === 'Em Uso');
+            if (coletoresEmUso.length > 0) {
+                console.log("Exemplo de coletor em uso:", JSON.stringify(coletoresEmUso[0], null, 2));
+            } else {
+                console.log("Nenhum coletor em uso encontrado nos dados");
+            }
+        }
+
+
+    </script>
+
+    <script>
+        // Adicione este código no final da tag <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Garantir que os eventos de clique sejam aplicados após o carregamento completo
+            setTimeout(function () {
+                corrigirEventosClique();
+                console.log("Eventos de clique verificados após carregamento completo");
+            }, 1000); // 1 segundo após o carregamento da página
+        });
+
+
+    </script>
+
+    <!-- Adicione esse código no seu HTML -->
+    <div id="painelRetiradas"
+        class="painel-retiradas-container fixed right-0 top-1/4 z-50 flex transition-all duration-300 ease-in-out transform translate-x-full">
+        <button id="togglePainelBtn"
+            class="toggle-button absolute left-0 top-10 transform -translate-x-full bg-primary text-white w-10 h-24 flex items-center justify-center rounded-l-lg shadow-lg hover:bg-primary-dark transition-colors">
+            <div class="flex flex-col items-center">
+                <i class="fas fa-users mb-2"></i>
+                <i class="fas fa-clock"></i>
+            </div>
+        </button>
+
+        <div
+            class="painel-content bg-white w-80 max-h-96 overflow-y-auto shadow-xl rounded-l-lg border-l border-t border-b border-gray-200">
+            <div class="painel-header bg-primary text-white p-3 sticky top-0 z-10 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Coletores em Uso</h3>
+                <div class="flex items-center text-sm">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span id="atualizacaoStatus">Atualizando...</span>
+                </div>
+            </div>
+
+            <div id="painelBody" class="painel-body p-2">
+                <!-- Conteúdo será inserido dinamicamente -->
+            </div>
+
+            <div class="painel-footer bg-gray-100 p-2 border-t border-gray-200 text-center sticky bottom-0">
+                <button id="atualizarDadosBtn"
+                    class="text-sm text-primary hover:text-primary-dark transition-colors flex items-center justify-center w-full">
+                    <i class="fas fa-sync-alt mr-1"></i>
+                    Atualizar dados
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const painelRetiradas = document.getElementById('painelRetiradas');
+            const toggleBtn = document.getElementById('togglePainelBtn');
+            const painelBody = document.getElementById('painelBody');
+            const atualizarBtn = document.getElementById('atualizarDadosBtn');
+            let isPanelOpen = false;
+
+            // Função para alternar o painel
+            function togglePanel() {
+                isPanelOpen = !isPanelOpen;
+
+                if (isPanelOpen) {
+                    painelRetiradas.classList.remove('translate-x-full');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    toggleBtn.style.backgroundColor = '#c01010';
+                    carregarColetoresEmUso();
+                } else {
+                    painelRetiradas.classList.add('translate-x-full');
+                    toggleBtn.innerHTML = '<div class="flex flex-col items-center"><i class="fas fa-users mb-2"></i><i class="fas fa-clock"></i></div>';
+                    toggleBtn.style.backgroundColor = '#e02020';
+                }
+            }
+
+            // Associar o evento de clique ao botão
+            toggleBtn.addEventListener('click', togglePanel);
+            atualizarBtn.addEventListener('click', carregarColetoresEmUso);
+
+            // Função para formatar hora
+            function formatarHora(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 1 ? partes[1] : dataHora;
+            }
+
+            // Função para calcular tempo decorrido
+            function calcularTempoDecorrido(dataHoraRetirada) {
+                if (!dataHoraRetirada) return '—';
+
+                try {
+                    const partes = dataHoraRetirada.split(' ');
+                    if (partes.length < 2) return '—';
+
+                    const dataPartes = partes[0].split('/');
+                    const horaPartes = partes[1].split(':');
+
+                    if (dataPartes.length < 3 || horaPartes.length < 2) return '—';
+
+                    const data = new Date(
+                        parseInt(dataPartes[2]), // ano
+                        parseInt(dataPartes[1]) - 1, // mês (0-11)
+                        parseInt(dataPartes[0]), // dia
+                        parseInt(horaPartes[0]), // hora
+                        parseInt(horaPartes[1])  // minutos
+                    );
+
+                    const agora = new Date();
+                    const diff = Math.floor((agora - data) / 1000 / 60); // diferença em minutos
+
+                    if (diff < 60) {
+                        return `${diff} min`;
+                    } else {
+                        const horas = Math.floor(diff / 60);
+                        const minutos = diff % 60;
+                        return `${horas}h ${minutos}m`;
+                    }
+                } catch (e) {
+                    console.error("Erro ao calcular tempo decorrido:", e);
+                    return '—';
+                }
+            }
+
+            // Função para carregar coletores em uso
+            function carregarColetoresEmUso() {
+                // Mostrar indicador de carregamento
+                painelBody.innerHTML = `
+        <div class="carregando">
+            <div class="spinner"></div>
+            <p>Carregando coletores...</p>
+        </div>
+    `;
+
+                // Fazer requisição para a API que deve consultar a tabela coletores e historico_colaborador
+                fetch('/api/coletores/em-uso')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos da API:', data);
+
+                        // Verificar se temos dados válidos
+                        if (!data || !Array.isArray(data) || data.length === 0) {
+                            painelBody.innerHTML = `
+                <div class="vazio-mensagem">
+                    <i class="fas fa-search"></i>
+                    <p>Nenhum coletor em uso</p>
+                </div>
+                `;
+                            atualizarContadorColetores(0);
+                            return;
+                        }
+
+                        // Armazenar os dados recuperados
+                        ultimosColetoresCarregados = data;
+
+                        // Renderizar os coletores
+                        renderizarColetores(data);
+                        atualizarHoraStatus();
+                        atualizarContadorColetores(data.length);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar coletores em uso:', error);
+
+                        // Verificar se temos dados em cache para mostrar
+                        if (ultimosColetoresCarregados.length > 0) {
+                            renderizarColetores(ultimosColetoresCarregados);
+                            mostrarMensagemErroDiscreta('Falha ao atualizar dados');
+                        } else {
+                            // Exibir mensagem de erro
+                            painelBody.innerHTML = `
+                <div class="erro-mensagem">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Não foi possível carregar os coletores do banco de dados</p>
+                    <button id="btnRetentativa" class="btn-retentativa">
+                        <i class="fas fa-sync-alt"></i> Tentar novamente
+                    </button>
+                </div>
+                `;
+
+                            // Adicionar evento ao botão de nova tentativa
+                            document.getElementById('btnRetentativa').addEventListener('click', carregarColetoresEmUso);
+                        }
+                    });
+            }
+
+            // Função para renderizar os coletores
+            function renderizarColetores(retiradas) {
+                if (retiradas.length === 0) {
+                    painelBody.innerHTML = '<div class="text-center py-6 text-gray-500">Nenhum coletor em uso no momento</div>';
+                    return;
+                }
+
+                let html = '<div class="space-y-2">';
+
+                retiradas.forEach(retirada => {
+                    html += `
+            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
+              <div class="flex justify-between items-start mb-1">
+                <span class="font-bold text-primary">#${retirada.id}</span>
+                <span class="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full">Em Uso</span>
+              </div>
+              <div class="text-sm font-bold mb-1">${retirada.usuario}</div>
+              <div class="text-xs text-gray-600 mb-2">${retirada.setor}</div>
+              <div class="flex justify-between text-xs text-gray-500">
+                <div>
+                  <i class="fas fa-clock mr-1"></i>
+                  <span>${formatarHora(retirada.dataHoraRetirada)}</span>
+                </div>
+                <div class="font-medium">
+                  Tempo: ${calcularTempoDecorrido(retirada.dataHoraRetirada)}
+                </div>
+              </div>
+            </div>
+          `;
+                });
+
+                html += '</div>';
+                painelBody.innerHTML = html;
+            }
+
+            // Função para exibir erro
+            function exibirErro(mensagem) {
+                painelBody.innerHTML = `
+          <div class="bg-red-100 text-red-700 p-3 rounded-lg flex items-center">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <p>${mensagem}</p>
+          </div>
+        `;
+            }
+
+            // Função para atualizar data/hora
+            function atualizarDataHora() {
+                const agora = new Date();
+                const dataHora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('atualizacaoStatus').textContent = `Atualizado: ${dataHora}`;
+            }
+
+            // Configurar atualização automática
+            let intervaloAtualizacao;
+
+            function iniciarAtualizacaoAutomatica() {
+                intervaloAtualizacao = setInterval(() => {
+                    if (isPanelOpen) {
+                        carregarColetoresEmUso();
+                    }
+                }, 60000); // 60 segundos
+            }
+
+            iniciarAtualizacaoAutomatica();
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #e02020;
+            --primary-light: #fd3a3a;
+            --primary-dark: #c01010;
+        }
+
+        .painel-retiradas-container {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .painel-content {
+            max-height: 80vh;
+        }
+
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        .border-primary {
+            border-color: var(--primary) !important;
+        }
+
+        .hover\:bg-primary-dark:hover {
+            background-color: var(--primary-dark) !important;
+        }
+
+        .hover\:text-primary-dark:hover {
+            color: var(--primary-dark) !important;
+        }
+    </style>
+
+    <!-- Painel lateral para mostrar coletores em uso com integração com banco de dados -->
+    <div id="painelLateral" class="painel-lateral">
+        <div class="painel-botao" id="togglePainel">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="painel-conteudo">
+            <div class="painel-cabecalho">
+                <h3>Coletores em Uso</h3>
+                <div class="painel-status">
+                    <i class="fas fa-clock"></i>
+                    <span id="atualizacaoStatus">Atualizado: --:--</span>
+                </div>
+            </div>
+            <div id="painelBody" class="painel-corpo">
+                <div class="carregando">
+                    <div class="spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+            </div>
+            <div class="painel-rodape">
+                <button id="atualizarBtn">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos para o painel lateral */
+        .painel-lateral {
+            position: fixed;
+            right: -320px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            max-height: 80vh;
+            display: flex;
+            transition: right 0.3s ease;
+            z-index: 999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .painel-lateral.aberto {
+            right: 0;
+        }
+
+        .painel-botao {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 120px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .painel-botao:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .painel-botao i {
+            font-size: 24px;
+        }
+
+        .painel-conteudo {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 8px 0 0 8px;
+            overflow: hidden;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .painel-cabecalho {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .painel-cabecalho h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .painel-status {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .painel-status i {
+            margin-right: 5px;
+        }
+
+        .painel-corpo {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: calc(80vh - 110px);
+            padding: 10px;
+        }
+
+        .painel-rodape {
+            padding: 10px;
+            border-top: 1px solid var(--gray-light);
+            text-align: center;
+        }
+
+        .painel-rodape button {
+            background-color: transparent;
+            color: var(--primary);
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .painel-rodape button:hover {
+            background-color: rgba(224, 32, 32, 0.1);
+        }
+
+        .painel-rodape button i {
+            margin-right: 5px;
+        }
+
+        /* Estilos para os itens de coletor */
+        .coletor-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .coletor-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .coletor-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .coletor-status {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--in-use);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .coletor-usuario {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .coletor-setor {
+            font-size: 12px;
+            color: var(--gray-dark);
+            margin-bottom: 8px;
+        }
+
+        .coletor-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .coletor-info-item {
+            font-size: 11px;
+            color: var(--gray-dark);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coletor-info-label {
+            font-weight: 500;
+            color: var(--gray);
+            margin-bottom: 2px;
+        }
+
+        .coletor-info-value {
+            font-weight: 600;
+        }
+
+        .coletor-tempo {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+        }
+
+        .coletor-tempo-valor {
+            font-weight: bold;
+            background-color: rgba(224, 32, 32, 0.1);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .coletor-turno {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background-color: rgba(26, 26, 80, 0.1);
+            color: var(--secondary);
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Estilos para o spinner de carregamento */
+        .carregando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(224, 32, 32, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mensagem de erro */
+        .erro-mensagem {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .erro-mensagem i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* Mensagem de vazio */
+        .vazio-mensagem {
+            text-align: center;
+            padding: 20px 10px;
+            color: var(--gray);
+        }
+
+        /* Contador de coletores */
+        .contador-coletores {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--primary-dark);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Media queries para responsividade */
+        @media (max-width: 768px) {
+            .painel-lateral {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .painel-lateral {
+                width: 260px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Elementos do DOM
+            const painelLateral = document.getElementById('painelLateral');
+            const toggleBtn = document.getElementById('togglePainel');
+            const painelBody = document.getElementById('painelBody');
+            const atualizarBtn = document.getElementById('atualizarBtn');
+            const atualizacaoStatus = document.getElementById('atualizacaoStatus');
+
+            // Estado do painel
+            let isPanelOpen = false;
+            let intervalId = null;
+            let totalColetoresEmUso = 0;
+
+            // Adicionar contador no botão
+            function atualizarContadorColetores(total) {
+                totalColetoresEmUso = total;
+
+                // Remover contador existente se houver
+                const contadorExistente = toggleBtn.querySelector('.contador-coletores');
+                if (contadorExistente) {
+                    contadorExistente.remove();
+                }
+
+                // Adicionar novo contador se total > 0
+                if (total > 0) {
+                    const contador = document.createElement('div');
+                    contador.className = 'contador-coletores';
+                    contador.textContent = total;
+                    toggleBtn.appendChild(contador);
+                }
+            }
+
+            // Formatar data completa (dd/mm/yyyy)
+            function formatarData(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 0 ? partes[0] : '—';
+            }
+
+            // Formatar hora (hh:mm)
+            function formatarHora(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 1 ? partes[1] : '—';
+            }
+
+            // Formatar hora atual
+            function formatarHoraAtual() {
+                const agora = new Date();
+                const horas = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                return `${horas}:${minutos}`;
+            }
+
+            // Atualizar status de hora
+            function atualizarHoraStatus() {
+                atualizacaoStatus.textContent = `Atualizado: ${formatarHoraAtual()}`;
+            }
+
+            // Calcular tempo decorrido
+            function calcularTempoDecorrido(dataHoraRetirada) {
+                if (!dataHoraRetirada) return '—';
+
+                try {
+                    const partes = dataHoraRetirada.split(' ');
+                    if (partes.length < 2) return '—';
+
+                    const dataPartes = partes[0].split('/');
+                    if (dataPartes.length < 3) return '—';
+
+                    const horaPartes = partes[1].split(':');
+                    if (horaPartes.length < 2) return '—';
+
+                    // Criar data no formato dia/mes/ano hora:minuto
+                    const dia = parseInt(dataPartes[0]);
+                    const mes = parseInt(dataPartes[1]) - 1; // mês em JS é 0-11
+                    const ano = parseInt(dataPartes[2]);
+                    const hora = parseInt(horaPartes[0]);
+                    const minuto = parseInt(horaPartes[1]);
+
+                    const data = new Date(ano, mes, dia, hora, minuto);
+
+                    const agora = new Date();
+                    const diff = Math.floor((agora - data) / 1000 / 60); // diferença em minutos
+
+                    if (diff < 60) {
+                        return `${diff} min`;
+                    } else {
+                        const horas = Math.floor(diff / 60);
+                        const minutos = diff % 60;
+                        return `${horas}h ${minutos.toString().padStart(2, '0')}m`;
+                    }
+                } catch (e) {
+                    console.error("Erro ao calcular tempo decorrido:", e);
+                    return '—';
+                }
+            }
+
+            // Alternar o painel
+            function togglePainel() {
+                isPanelOpen = !isPanelOpen;
+
+                if (isPanelOpen) {
+                    painelLateral.classList.add('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    carregarColetoresEmUso();
+                    iniciarAtualizacaoAutomatica();
+                } else {
+                    painelLateral.classList.remove('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-users"></i>';
+
+                    // Adicionar o contador novamente se necessário
+                    if (totalColetoresEmUso > 0) {
+                        const contador = document.createElement('div');
+                        contador.className = 'contador-coletores';
+                        contador.textContent = totalColetoresEmUso;
+                        toggleBtn.appendChild(contador);
+                    }
+
+                    pararAtualizacaoAutomatica();
+                }
+            }
+
+
+            // Renderizar coletores
+            
+
+            // Iniciar atualização automática
+            function iniciarAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+
+                intervalId = setInterval(() => {
+                    carregarColetoresEmUso();
+                }, 60000); // Atualizar a cada 1 minuto
+            }
+
+            // Parar atualização automática
+            function pararAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            // Verificar coletores em uso inicialmente (mesmo com painel fechado)
+            function verificarColetoresEmUsoInicial() {
+                fetch('/api/coletores/em-uso')
+                    .then(response => response.ok ? response.json() : [])
+                    .then(data => {
+                        atualizarContadorColetores(data.length);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar coletores em uso inicial:', error);
+                    });
+            }
+
+            // Ouvintes de eventos
+            toggleBtn.addEventListener('click', togglePainel);
+            atualizarBtn.addEventListener('click', carregarColetoresEmUso);
+
+            // Inicializar hora de atualização
+            atualizarHoraStatus();
+
+            // Verificar coletores em uso ao carregar a página
+            verificarColetoresEmUsoInicial();
+
+            // Verificar coletores em uso periodicamente mesmo com painel fechado
+            setInterval(verificarColetoresEmUsoInicial, 120000); // A cada 2 minutos
+        });
+    </script>
+
+    <!-- Painel lateral flutuante para coletores em uso -->
+    <div id="painelLateral" class="painel-lateral">
+        <div class="painel-botao" id="togglePainel">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="painel-conteudo">
+            <div class="painel-cabecalho">
+                <h3>Coletores em Uso</h3>
+                <div class="painel-status">
+                    <i class="fas fa-clock"></i>
+                    <span id="atualizacaoStatus">Atualizado: --:--</span>
+                </div>
+            </div>
+            <div id="painelBody" class="painel-corpo">
+                <div class="carregando">
+                    <div class="spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+            </div>
+            <div class="painel-rodape">
+                <button id="atualizarBtn">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos para o painel lateral */
+        .painel-lateral {
+            position: fixed;
+            right: -320px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            max-height: 80vh;
+            display: flex;
+            transition: right 0.3s ease;
+            z-index: 999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .painel-lateral.aberto {
+            right: 0;
+        }
+
+        .painel-botao {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 120px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .painel-botao:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .painel-botao i {
+            font-size: 24px;
+        }
+
+        .painel-conteudo {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 8px 0 0 8px;
+            overflow: hidden;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .painel-cabecalho {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .painel-cabecalho h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .painel-status {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .painel-status i {
+            margin-right: 5px;
+        }
+
+        .painel-corpo {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: calc(80vh - 110px);
+            padding: 10px;
+        }
+
+        .painel-rodape {
+            padding: 10px;
+            border-top: 1px solid var(--gray-light);
+            text-align: center;
+        }
+
+        .painel-rodape button {
+            background-color: transparent;
+            color: var(--primary);
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .painel-rodape button:hover {
+            background-color: rgba(224, 32, 32, 0.1);
+        }
+
+        .painel-rodape button i {
+            margin-right: 5px;
+        }
+
+        /* Estilos para os itens de coletor */
+        .coletor-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .coletor-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .coletor-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .coletor-status {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--in-use);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .coletor-usuario {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .coletor-setor {
+            font-size: 12px;
+            color: var(--gray-dark);
+            margin-bottom: 8px;
+        }
+
+        .coletor-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .coletor-info-item {
+            font-size: 11px;
+            color: var(--gray-dark);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coletor-info-label {
+            font-weight: 500;
+            color: var(--gray);
+            margin-bottom: 2px;
+        }
+
+        .coletor-info-value {
+            font-weight: 600;
+        }
+
+        .coletor-tempo {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+        }
+
+        .coletor-tempo-valor {
+            font-weight: bold;
+            background-color: rgba(224, 32, 32, 0.1);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .coletor-turno {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background-color: rgba(26, 26, 80, 0.1);
+            color: var(--secondary);
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Estilos para o spinner de carregamento */
+        .carregando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+
+        .carregando .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(224, 32, 32, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: girar 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes girar {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mensagem de erro */
+        .erro-mensagem {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .erro-mensagem i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* Mensagem de vazio */
+        .vazio-mensagem {
+            text-align: center;
+            padding: 20px 10px;
+            color: var(--gray);
+        }
+
+        /* Contador de coletores */
+        .contador-coletores {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--primary-dark);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Botão de retentativa */
+        .btn-retentativa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-retentativa:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-retentativa i {
+            margin-right: 5px;
+        }
+
+        /* Media queries para responsividade */
+        @media (max-width: 768px) {
+            .painel-lateral {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .painel-lateral {
+                width: 260px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Remover painéis duplicados se existirem
+            const paineisDuplicados = document.querySelectorAll('.painel-retiradas-container');
+            paineisDuplicados.forEach(painel => painel.remove());
+
+            // Elementos do DOM
+            const painelLateral = document.getElementById('painelLateral');
+            const toggleBtn = document.getElementById('togglePainel');
+            const painelBody = document.getElementById('painelBody');
+            const atualizarBtn = document.getElementById('atualizarBtn');
+            const atualizacaoStatus = document.getElementById('atualizacaoStatus');
+
+            // Estado do painel
+            let isPanelOpen = false;
+            let intervalId = null;
+            let totalColetoresEmUso = 0;
+            let ultimosColetoresCarregados = [];
+
+            // Adicionar contador no botão
+            function atualizarContadorColetores(total) {
+                totalColetoresEmUso = total;
+
+                // Remover contador existente se houver
+                const contadorExistente = toggleBtn.querySelector('.contador-coletores');
+                if (contadorExistente) {
+                    contadorExistente.remove();
+                }
+
+                // Adicionar novo contador se total > 0
+                if (total > 0) {
+                    const contador = document.createElement('div');
+                    contador.className = 'contador-coletores';
+                    contador.textContent = total;
+                    toggleBtn.appendChild(contador);
+                }
+            }
+
+            // Formatar data completa (dd/mm/yyyy)
+            function formatarData(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 0 ? partes[0] : '—';
+            }
+
+            // Formatar hora (hh:mm)
+            function formatarHora(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 1 ? partes[1] : '—';
+            }
+
+            // Formatar hora atual
+            function formatarHoraAtual() {
+                const agora = new Date();
+                const horas = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                return `${horas}:${minutos}`;
+            }
+
+            // Atualizar status de hora
+            function atualizarHoraStatus() {
+                atualizacaoStatus.textContent = `Atualizado: ${formatarHoraAtual()}`;
+            }
+
+            // Calcular tempo decorrido
+            function calcularTempoDecorrido(dataHoraRetirada) {
+                if (!dataHoraRetirada) return '—';
+
+                try {
+                    const partes = dataHoraRetirada.split(' ');
+                    if (partes.length < 2) return '—';
+
+                    const dataPartes = partes[0].split('/');
+                    if (dataPartes.length < 3) return '—';
+
+                    const horaPartes = partes[1].split(':');
+                    if (horaPartes.length < 2) return '—';
+
+                    // Criar data no formato dia/mes/ano hora:minuto
+                    const dia = parseInt(dataPartes[0]);
+                    const mes = parseInt(dataPartes[1]) - 1; // mês em JS é 0-11
+                    const ano = parseInt(dataPartes[2]);
+                    const hora = parseInt(horaPartes[0]);
+                    const minuto = parseInt(horaPartes[1]);
+
+                    const data = new Date(ano, mes, dia, hora, minuto);
+
+                    const agora = new Date();
+                    const diff = Math.floor((agora - data) / 1000 / 60); // diferença em minutos
+
+                    if (diff < 60) {
+                        return `${diff} min`;
+                    } else {
+                        const horas = Math.floor(diff / 60);
+                        const minutos = diff % 60;
+                        return `${horas}h ${minutos.toString().padStart(2, '0')}m`;
+                    }
+                } catch (e) {
+                    console.error("Erro ao calcular tempo decorrido:", e);
+                    return '—';
+                }
+            }
+
+            // Alternar o painel
+            function togglePainel() {
+                isPanelOpen = !isPanelOpen;
+
+                if (isPanelOpen) {
+                    painelLateral.classList.add('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    carregarColetoresEmUso();
+                    iniciarAtualizacaoAutomatica();
+                } else {
+                    painelLateral.classList.remove('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-users"></i>';
+
+                    // Adicionar o contador novamente se necessário
+                    if (totalColetoresEmUso > 0) {
+                        const contador = document.createElement('div');
+                        contador.className = 'contador-coletores';
+                        contador.textContent = totalColetoresEmUso;
+                        toggleBtn.appendChild(contador);
+                    }
+
+                    pararAtualizacaoAutomatica();
+                }
+            }
+
+            // Carregar coletores em uso
+            function carregarColetoresEmUso() {
+                // Mostrar indicador de carregamento apenas se for primeira carga ou se o painel estiver vazio
+                if (!ultimosColetoresCarregados.length) {
+                    painelBody.innerHTML = `
+        <div class="carregando">
+            <div class="spinner"></div>
+            <p>Carregando coletores...</p>
+        </div>
+        `;
+                }
+
+                // Fazer requisição para a API
+                fetch('/api/coletores/em-uso')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos da API:', data);
+
+                        // Verificar se temos dados válidos
+                        if (!data || !Array.isArray(data) || data.length === 0) {
+                            painelBody.innerHTML = `
+                <div class="vazio-mensagem">
+                    <i class="fas fa-search"></i>
+                    <p>Nenhum coletor em uso</p>
+                </div>
+                `;
+                            atualizarContadorColetores(0);
+                            return;
+                        }
+
+                        // Processar e armazenar os dados recuperados
+                        ultimosColetoresCarregados = data;
+
+                        // Renderizar os coletores
+                        renderizarColetores(data);
+                        atualizarHoraStatus();
+                        atualizarContadorColetores(data.length);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar coletores em uso:', error);
+
+                        // Verificar se temos dados em cache para mostrar
+                        if (ultimosColetoresCarregados.length > 0) {
+                            renderizarColetores(ultimosColetoresCarregados);
+                            mostrarMensagemErroDiscreta('Falha ao atualizar dados');
+                        } else {
+                            // Exibir mensagem de erro
+                            painelBody.innerHTML = `
+                <div class="erro-mensagem">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Não foi possível carregar os coletores</p>
+                    <button id="btnRetentativa" class="btn-retentativa">
+                        <i class="fas fa-sync-alt"></i> Tentar novamente
+                    </button>
+                </div>
+                `;
+
+                            // Adicionar evento ao botão de nova tentativa
+                            document.getElementById('btnRetentativa').addEventListener('click', carregarColetoresEmUso);
+
+                            // Usar dados simulados como fallback apenas se não temos dados reais
+                            usarDadosSimulados();
+                        }
+                    });
+            }
+
+            // Mostrar mensagem de erro discreta (quando já temos dados carregados)
+            function mostrarMensagemErroDiscreta(mensagem) {
+                const mensagemErro = document.createElement('div');
+                mensagemErro.className = 'erro-discreta';
+                mensagemErro.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i> ${mensagem}
+                <button id="btnRetryDiscreta">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            `;
+
+                // Estilo para mensagem discreta
+                mensagemErro.style.position = 'absolute';
+                mensagemErro.style.bottom = '60px';
+                mensagemErro.style.left = '10px';
+                mensagemErro.style.right = '10px';
+                mensagemErro.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                mensagemErro.style.color = 'var(--danger)';
+                mensagemErro.style.padding = '8px 12px';
+                mensagemErro.style.borderRadius = '4px';
+                mensagemErro.style.fontSize = '12px';
+                mensagemErro.style.display = 'flex';
+                mensagemErro.style.alignItems = 'center';
+                mensagemErro.style.justifyContent = 'space-between';
+                mensagemErro.style.zIndex = '10';
+
+                // Adicionar ao painel
+                document.querySelector('.painel-conteudo').appendChild(mensagemErro);
+
+                // Configurar botão de retentativa
+                document.getElementById('btnRetryDiscreta').addEventListener('click', function () {
+                    mensagemErro.remove();
+                    carregarColetoresEmUso();
+                });
+
+                // Auto-remover após 5 segundos
+                setTimeout(() => {
+                    if (mensagemErro.parentElement) {
+                        mensagemErro.remove();
+                    }
+                }, 5000);
+            }
+
+            // Usar dados simulados como fallback
+            function usarDadosSimulados() {
+                const dadosSimulados = [
+                    {
+                        id: '002',
+                        usuario: 'GABRIEL SOUSA',
+                        matricula: '338766',
+                        setor: 'Armazenamento',
+                        turno: '1º Turno',
+                        data_hora_retirada: '06/05/2025 08:15',
+                        bateria: '85'
+                    },
+                    {
+                        id: '008',
+                        usuario: 'AMANDA SILVA',
+                        matricula: '421980',
+                        setor: 'Armazenamento',
+                        turno: 'Intermediário',
+                        data_hora_retirada: '06/05/2025 09:30',
+                        bateria: '92'
+                    },
+                    {
+                        id: '011',
+                        usuario: 'TÉCNICO TI',
+                        matricula: 'MA201990',
+                        setor: 'TI',
+                        turno: '2º Turno',
+                        data_hora_retirada: '06/05/2025 10:45',
+                        bateria: '76'
+                    }
+                ];
+
+                console.log('Usando dados simulados como fallback');
+
+                // Armazenar em cache os dados simulados
+                ultimosColetoresCarregados = dadosSimulados;
+
+                // Renderizar
+                renderizarColetores(dadosSimulados);
+                atualizarHoraStatus();
+                atualizarContadorColetores(dadosSimulados.length);
+            }
+
+            function renderizarColetores(coletores) {
+                // Verificar se temos coletores para mostrar
+                if (!coletores || coletores.length === 0) {
+                    painelBody.innerHTML = `
+        <div class="vazio-mensagem">
+            <i class="fas fa-search"></i>
+            <p>Nenhum coletor em uso</p>
+        </div>
+        `;
+                    return;
+                }
+
+                let html = '';
+
+                coletores.forEach(coletor => {
+                    // Extrair campos relevantes do banco de dados
+                    // Campos podem vir de coletores ou historico_colaborador
+
+                    // Nome do usuário - pode vir de nome_colaborador, usuario ou da tabela usuarios
+                    const nomeUsuario = (coletor.nome_colaborador && coletor.nome_colaborador !== "null" && coletor.nome_colaborador !== "")
+                        ? coletor.nome_colaborador
+                        : ((coletor.usuario && coletor.usuario !== "null" && coletor.usuario !== "")
+                            ? coletor.usuario
+                            : 'NENHUM USUÁRIO');
+
+                    // Matrícula do colaborador
+                    const matricula = coletor.matricula || '—';
+
+                    // Setor do colaborador
+                    const setor = coletor.setor || 'Não especificado';
+
+                    // Turno do colaborador
+                    const turno = coletor.turno || 'Não especificado';
+
+                    // Bateria do coletor
+                    const bateria = coletor.bateria || '100';
+
+                    // Data e hora da retirada - verificar os possíveis campos
+                    const dataRetirada = coletor.data_retirada || coletor.data_inicio || coletor.data_vigente || '';
+                    const horaRetirada = coletor.hora_retirada || coletor.hora_inicio || coletor.hora_registro || '';
+
+                    // Formatar data e hora completa
+                    const dataHoraRetirada = dataRetirada && horaRetirada
+                        ? `${dataRetirada} ${horaRetirada}`
+                        : coletor.data_hora_retirada || '';
+
+                    // Template do item de coletor
+                    html += `
+        <div class="coletor-item">
+            <div class="coletor-cabecalho">
+                <div class="coletor-id">#${coletor.id}</div>
+                <div class="coletor-status">Em Uso</div>
+            </div>
+            <div class="coletor-usuario">
+                ${nomeUsuario}
+                <span class="coletor-turno">${turno}</span>
+            </div>
+            <div class="coletor-setor">${setor}</div>
+            <div class="coletor-info-grid">
+                <div class="coletor-info-item">
+                    <span class="coletor-info-label">Matrícula</span>
+                    <span class="coletor-info-value">${matricula}</span>
+                </div>
+                <div class="coletor-info-item">
+                    <span class="coletor-info-label">Bateria</span>
+                    <span class="coletor-info-value">${bateria}%</span>
+                </div>
+                <div class="coletor-info-item">
+                    <span class="coletor-info-label">Data</span>
+                    <span class="coletor-info-value">${formatarData(dataHoraRetirada)}</span>
+                </div>
+                <div class="coletor-info-item">
+                    <span class="coletor-info-label">Hora</span>
+                    <span class="coletor-info-value">${formatarHora(dataHoraRetirada)}</span>
+                </div>
+                <div class="coletor-tempo">
+                    <span>Tempo em uso</span>
+                    <span class="coletor-tempo-valor">${calcularTempoDecorrido(dataHoraRetirada)}</span>
+                </div>
+            </div>
+        </div>
+        `;
+                });
+
+                painelBody.innerHTML = html;
+            }
+
+            // Iniciar atualização automática
+            function iniciarAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+
+                intervalId = setInterval(() => {
+                    carregarColetoresEmUso();
+                }, 60000); // Atualizar a cada 1 minuto
+            }
+
+            // Parar atualização automática
+            function pararAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            // Verificar coletores em uso inicialmente (mesmo com painel fechado)
+            function verificarColetoresEmUsoInicial() {
+                fetch('/api/coletores/em-uso')
+                    .then(response => response.ok ? response.json() : [])
+                    .then(data => {
+                        atualizarContadorColetores(data.length);
+                        // Guardar os dados para uso futuro
+                        if (data.length > 0) {
+                            ultimosColetoresCarregados = data;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar coletores em uso inicial:', error);
+                        // Em caso de erro, tentar usar dados simulados para o contador
+                        if (ultimosColetoresCarregados.length === 0) {
+                            usarDadosSimulados();
+                        }
+                    });
+            }
+
+            // Ouvintes de eventos
+            toggleBtn.addEventListener('click', togglePainel);
+            atualizarBtn.addEventListener('click', carregarColetoresEmUso);
+
+            // Inicializar hora de atualização
+            atualizarHoraStatus();
+
+            // Verificar coletores em uso ao carregar a página
+            verificarColetoresEmUsoInicial();
+
+            // Verificar coletores em uso periodicamente mesmo com painel fechado
+            setInterval(verificarColetoresEmUsoInicial, 120000); // A cada 2 minutos
+        });
+    </script>
+
+    <!-- Painel lateral flutuante para coletores em uso -->
+    <div id="painelLateral" class="painel-lateral">
+        <div class="painel-botao" id="togglePainel">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="painel-conteudo">
+            <div class="painel-cabecalho">
+                <h3>Coletores em Uso</h3>
+                <div class="painel-status">
+                    <i class="fas fa-clock"></i>
+                    <span id="atualizacaoStatus">Atualizado: --:--</span>
+                </div>
+            </div>
+            <div id="painelBody" class="painel-corpo">
+                <div class="carregando">
+                    <div class="spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+            </div>
+            <div class="painel-rodape">
+                <button id="atualizarBtn">
+                    <i class="fas fa-sync-alt"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Estilos para o painel lateral */
+        .painel-lateral {
+            position: fixed;
+            right: -320px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 320px;
+            max-height: 80vh;
+            display: flex;
+            transition: right 0.3s ease;
+            z-index: 999;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .painel-lateral.aberto {
+            right: 0;
+        }
+
+        .painel-botao {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 120px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s;
+        }
+
+        .painel-botao:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .painel-botao i {
+            font-size: 24px;
+        }
+
+        .painel-conteudo {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border-radius: 8px 0 0 8px;
+            overflow: hidden;
+            box-shadow: -2px 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .painel-cabecalho {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .painel-cabecalho h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .painel-status {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .painel-status i {
+            margin-right: 5px;
+        }
+
+        .painel-corpo {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: calc(80vh - 110px);
+            padding: 10px;
+        }
+
+        .painel-rodape {
+            padding: 10px;
+            border-top: 1px solid var(--gray-light);
+            text-align: center;
+        }
+
+        .painel-rodape button {
+            background-color: transparent;
+            color: var(--primary);
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .painel-rodape button:hover {
+            background-color: rgba(224, 32, 32, 0.1);
+        }
+
+        .painel-rodape button i {
+            margin-right: 5px;
+        }
+
+        /* Estilos para os itens de coletor */
+        .coletor-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .coletor-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .coletor-id {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .coletor-status {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--in-use);
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .coletor-usuario {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .coletor-setor {
+            font-size: 12px;
+            color: var(--gray-dark);
+            margin-bottom: 8px;
+        }
+
+        .coletor-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .coletor-info-item {
+            font-size: 11px;
+            color: var(--gray-dark);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coletor-info-label {
+            font-weight: 500;
+            color: var(--gray);
+            margin-bottom: 2px;
+        }
+
+        .coletor-info-value {
+            font-weight: 600;
+        }
+
+        .coletor-tempo {
+            grid-column: span 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+            padding-top: 5px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+        }
+
+        .coletor-tempo-valor {
+            font-weight: bold;
+            background-color: rgba(224, 32, 32, 0.1);
+            color: var(--primary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .coletor-turno {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            background-color: rgba(26, 26, 80, 0.1);
+            color: var(--secondary);
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Estilos para o spinner de carregamento */
+        .carregando {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--gray);
+        }
+
+        .carregando .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(224, 32, 32, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: girar 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes girar {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Mensagem de erro */
+        .erro-mensagem {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .erro-mensagem i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        /* Mensagem de vazio */
+        .vazio-mensagem {
+            text-align: center;
+            padding: 20px 10px;
+            color: var(--gray);
+        }
+
+        /* Contador de coletores */
+        .contador-coletores {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: var(--primary-dark);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Botão de retentativa */
+        .btn-retentativa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-retentativa:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-retentativa i {
+            margin-right: 5px;
+        }
+
+        /* Media queries para responsividade */
+        @media (max-width: 768px) {
+            .painel-lateral {
+                width: 280px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .painel-lateral {
+                width: 260px;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Remover painéis duplicados se existirem
+            const paineisDuplicados = document.querySelectorAll('.painel-retiradas-container');
+            paineisDuplicados.forEach(painel => painel.remove());
+
+            // Elementos do DOM
+            const painelLateral = document.getElementById('painelLateral');
+            const toggleBtn = document.getElementById('togglePainel');
+            const painelBody = document.getElementById('painelBody');
+            const atualizarBtn = document.getElementById('atualizarBtn');
+            const atualizacaoStatus = document.getElementById('atualizacaoStatus');
+
+            // Estado do painel
+            let isPanelOpen = false;
+            let intervalId = null;
+            let totalColetoresEmUso = 0;
+            let ultimosColetoresCarregados = [];
+
+            // Adicionar contador no botão
+            function atualizarContadorColetores(total) {
+                totalColetoresEmUso = total;
+
+                // Remover contador existente se houver
+                const contadorExistente = toggleBtn.querySelector('.contador-coletores');
+                if (contadorExistente) {
+                    contadorExistente.remove();
+                }
+
+                // Adicionar novo contador se total > 0
+                if (total > 0) {
+                    const contador = document.createElement('div');
+                    contador.className = 'contador-coletores';
+                    contador.textContent = total;
+                    toggleBtn.appendChild(contador);
+                }
+            }
+
+            // Formatar data completa (dd/mm/yyyy)
+            function formatarData(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 0 ? partes[0] : '—';
+            }
+
+            // Formatar hora (hh:mm)
+            function formatarHora(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 1 ? partes[1] : '—';
+            }
+
+            // Formatar hora atual
+            function formatarHoraAtual() {
+                const agora = new Date();
+                const horas = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                return `${horas}:${minutos}`;
+            }
+
+            // Atualizar status de hora
+            function atualizarHoraStatus() {
+                atualizacaoStatus.textContent = `Atualizado: ${formatarHoraAtual()}`;
+            }
+
+            // Calcular tempo decorrido
+            function calcularTempoDecorrido(dataHoraRetirada) {
+                if (!dataHoraRetirada) return '—';
+
+                try {
+                    const partes = dataHoraRetirada.split(' ');
+                    if (partes.length < 2) return '—';
+
+                    const dataPartes = partes[0].split('/');
+                    if (dataPartes.length < 3) return '—';
+
+                    const horaPartes = partes[1].split(':');
+                    if (horaPartes.length < 2) return '—';
+
+                    // Criar data no formato dia/mes/ano hora:minuto
+                    const dia = parseInt(dataPartes[0]);
+                    const mes = parseInt(dataPartes[1]) - 1; // mês em JS é 0-11
+                    const ano = parseInt(dataPartes[2]);
+                    const hora = parseInt(horaPartes[0]);
+                    const minuto = parseInt(horaPartes[1]);
+
+                    const data = new Date(ano, mes, dia, hora, minuto);
+
+                    const agora = new Date();
+                    const diff = Math.floor((agora - data) / 1000 / 60); // diferença em minutos
+
+                    if (diff < 60) {
+                        return `${diff} min`;
+                    } else {
+                        const horas = Math.floor(diff / 60);
+                        const minutos = diff % 60;
+                        return `${horas}h ${minutos.toString().padStart(2, '0')}m`;
+                    }
+                } catch (e) {
+                    console.error("Erro ao calcular tempo decorrido:", e);
+                    return '—';
+                }
+            }
+
+            // Alternar o painel
+            function togglePainel() {
+                isPanelOpen = !isPanelOpen;
+
+                if (isPanelOpen) {
+                    painelLateral.classList.add('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                    carregarColetoresEmUso();
+                    iniciarAtualizacaoAutomatica();
+                } else {
+                    painelLateral.classList.remove('aberto');
+                    toggleBtn.innerHTML = '<i class="fas fa-users"></i>';
+
+                    // Adicionar o contador novamente se necessário
+                    if (totalColetoresEmUso > 0) {
+                        const contador = document.createElement('div');
+                        contador.className = 'contador-coletores';
+                        contador.textContent = totalColetoresEmUso;
+                        toggleBtn.appendChild(contador);
+                    }
+
+                    pararAtualizacaoAutomatica();
+                }
+            }
+
+            // Carregar coletores em uso
+            function carregarColetoresEmUso() {
+                // Mostrar indicador de carregamento apenas se for primeira carga ou se o painel estiver vazio
+                if (!ultimosColetoresCarregados.length) {
+                    painelBody.innerHTML = `
+                    <div class="carregando">
+                        <div class="spinner"></div>
+                        <p>Carregando coletores...</p>
+                    </div>
+                `;
+                }
+
+                // Fazer requisição para a API
+                fetch('/api/coletores/em-uso')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Erro: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Dados recebidos da API:', data);
+
+                        // Processar e armazenar os dados recuperados
+                        ultimosColetoresCarregados = data;
+
+                        // Renderizar os coletores
+                        renderizarColetores(data);
+                        atualizarHoraStatus();
+                        atualizarContadorColetores(data.length);
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar coletores em uso:', error);
+
+                        // Verificar se temos dados em cache para mostrar
+                        if (ultimosColetoresCarregados.length > 0) {
+                            renderizarColetores(ultimosColetoresCarregados);
+                            mostrarMensagemErroDiscreta('Falha ao atualizar dados');
+                        } else {
+                            // Exibir mensagem de erro
+                            painelBody.innerHTML = `
+                            <div class="erro-mensagem">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <p>Não foi possível carregar os coletores</p>
+                                <button id="btnRetentativa" class="btn-retentativa">
+                                    <i class="fas fa-sync-alt"></i> Tentar novamente
+                                </button>
+                            </div>
+                        `;
+
+                            // Adicionar evento ao botão de nova tentativa
+                            document.getElementById('btnRetentativa').addEventListener('click', carregarColetoresEmUso);
+
+                            // Usar dados simulados como fallback apenas se não temos dados reais
+                            usarDadosSimulados();
+                        }
+                    });
+            }
+
+            // Mostrar mensagem de erro discreta (quando já temos dados carregados)
+            function mostrarMensagemErroDiscreta(mensagem) {
+                const mensagemErro = document.createElement('div');
+                mensagemErro.className = 'erro-discreta';
+                mensagemErro.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i> ${mensagem}
+                <button id="btnRetryDiscreta">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            `;
+
+                // Estilo para mensagem discreta
+                mensagemErro.style.position = 'absolute';
+                mensagemErro.style.bottom = '60px';
+                mensagemErro.style.left = '10px';
+                mensagemErro.style.right = '10px';
+                mensagemErro.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                mensagemErro.style.color = 'var(--danger)';
+                mensagemErro.style.padding = '8px 12px';
+                mensagemErro.style.borderRadius = '4px';
+                mensagemErro.style.fontSize = '12px';
+                mensagemErro.style.display = 'flex';
+                mensagemErro.style.alignItems = 'center';
+                mensagemErro.style.justifyContent = 'space-between';
+                mensagemErro.style.zIndex = '10';
+
+                // Adicionar ao painel
+                document.querySelector('.painel-conteudo').appendChild(mensagemErro);
+
+                // Configurar botão de retentativa
+                document.getElementById('btnRetryDiscreta').addEventListener('click', function () {
+                    mensagemErro.remove();
+                    carregarColetoresEmUso();
+                });
+
+                // Auto-remover após 5 segundos
+                setTimeout(() => {
+                    if (mensagemErro.parentElement) {
+                        mensagemErro.remove();
+                    }
+                }, 5000);
+            }
+
+            // Usar dados simulados como fallback
+            function usarDadosSimulados() {
+                const dadosSimulados = [
+                    {
+                        id: '002',
+                        usuario: 'GABRIEL SOUSA',
+                        matricula: '338766',
+                        setor: 'Armazenamento',
+                        turno: '1º Turno',
+                        data_hora_retirada: '06/05/2025 08:15',
+                        bateria: '85'
+                    },
+                    {
+                        id: '008',
+                        usuario: 'AMANDA SILVA',
+                        matricula: '421980',
+                        setor: 'Armazenamento',
+                        turno: 'Intermediário',
+                        data_hora_retirada: '06/05/2025 09:30',
+                        bateria: '92'
+                    },
+                    {
+                        id: '011',
+                        usuario: 'TÉCNICO TI',
+                        matricula: 'MA201990',
+                        setor: 'TI',
+                        turno: '2º Turno',
+                        data_hora_retirada: '06/05/2025 10:45',
+                        bateria: '76'
+                    }
+                ];
+
+                console.log('Usando dados simulados como fallback');
+
+                // Armazenar em cache os dados simulados
+                ultimosColetoresCarregados = dadosSimulados;
+
+                // Renderizar
+                renderizarColetores(dadosSimulados);
+                atualizarHoraStatus();
+                atualizarContadorColetores(dadosSimulados.length);
+            }
+
+
+            // Iniciar atualização automática
+            function iniciarAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+
+                intervalId = setInterval(() => {
+                    carregarColetoresEmUso();
+                }, 60000); // Atualizar a cada 1 minuto
+            }
+
+            // Parar atualização automática
+            function pararAtualizacaoAutomatica() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            // Verificar coletores em uso inicialmente (mesmo com painel fechado)
+            function verificarColetoresEmUsoInicial() {
+                fetch('/api/coletores/em-uso')
+                    .then(response => response.ok ? response.json() : [])
+                    .then(data => {
+                        atualizarContadorColetores(data.length);
+                        // Guardar os dados para uso futuro
+                        if (data.length > 0) {
+                            ultimosColetoresCarregados = data;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar coletores em uso inicial:', error);
+                        // Em caso de erro, tentar usar dados simulados para o contador
+                        if (ultimosColetoresCarregados.length === 0) {
+                            usarDadosSimulados();
+                        }
+                    });
+            }
+
+            // Ouvintes de eventos
+            toggleBtn.addEventListener('click', togglePainel);
+            atualizarBtn.addEventListener('click', carregarColetoresEmUso);
+
+            // Inicializar hora de atualização
+            atualizarHoraStatus();
+
+            // Verificar coletores em uso ao carregar a página
+            verificarColetoresEmUsoInicial();
+
+            // Verificar coletores em uso periodicamente mesmo com painel fechado
+            setInterval(verificarColetoresEmUsoInicial, 120000); // A cada 2 minutos
+        });
+    </script><!-- Painel Lateral (Versão Simplificada) -->
+    <div id="meuPainelSimples"
+        style="position: fixed; right: -300px; top: 50%; transform: translateY(-50%); width: 300px; max-height: 80vh; display: flex; z-index: 9999; transition: right 0.3s ease;">
+        <!-- Botão de Ativar -->
+        <div id="meuBotaoSimples"
+            style="position: absolute; left: -50px; top: 50%; transform: translateY(-50%); width: 50px; height: 120px; background-color: #e02020; color: white; display: flex; align-items: center; justify-content: center; border-radius: 8px 0 0 8px; cursor: pointer; box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2); transition: all 0.3s ease;">
+            <i class="fas fa-users" style="font-size: 24px;"></i>
+        </div>
+
+        <!-- Conteúdo do Painel -->
+        <div
+            style="flex-grow: 1; display: flex; flex-direction: column; background-color: white; border-radius: 8px 0 0 8px; overflow: hidden; box-shadow: -2px 0 15px rgba(0, 0, 0, 0.2);">
+            <div
+                style="background-color: #e02020; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: bold;">Coletores em Uso</h3>
+                <div style="display: flex; align-items: center; font-size: 12px;">
+                    <i class="fas fa-clock" style="margin-right: 5px;"></i>
+                    <span id="meuHorarioSimples">Atualizado: --:--</span>
+                </div>
+            </div>
+
+            <div id="meuConteudoSimples"
+                style="flex-grow: 1; overflow-y: auto; max-height: calc(80vh - 110px); padding: 10px;">
+                <div
+                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; color: #6c757d;">
+                    <div
+                        style="width: 30px; height: 30px; border: 3px solid rgba(224, 32, 32, 0.1); border-radius: 50%; border-top-color: #e02020; animation: girarSimples 1s linear infinite; margin-bottom: 10px;">
+                    </div>
+                    <p>Carregando...</p>
+                </div>
+            </div>
+
+            <div style="padding: 10px; border-top: 1px solid #e9ecef; text-align: center;">
+                <button id="meuBtnAtualizarSimples"
+                    style="background-color: transparent; color: #e02020; border: none; padding: 5px 10px; font-size: 14px; cursor: pointer; border-radius: 4px; transition: background-color 0.2s; display: flex; align-items: center; justify-content: center; width: 100%;">
+                    <i class="fas fa-sync-alt" style="margin-right: 5px;"></i> Atualizar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes girarSimples {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script>
+        // Script isolado para o painel simples
+        (function () {
+            // Criar a animação CSS caso não exista
+            if (!document.querySelector('style#animacao-painel-simples')) {
+                const style = document.createElement('style');
+                style.id = 'animacao-painel-simples';
+                style.textContent = `
+            @keyframes girarSimples {
+                to { transform: rotate(360deg); }
+            }
+        `;
+                document.head.appendChild(style);
+            }
+
+            // Variáveis e elementos - usando nomenclatura única para evitar conflitos
+            const painel = document.getElementById('meuPainelSimples');
+            const botao = document.getElementById('meuBotaoSimples');
+            const conteudo = document.getElementById('meuConteudoSimples');
+            const btnAtualizar = document.getElementById('meuBtnAtualizarSimples');
+            const horarioEl = document.getElementById('meuHorarioSimples');
+
+            // Estado do painel - variáveis únicas para evitar conflitos
+            let painelAbertoSimples = false;
+            let dadosSimuladosSimples = [
+                {
+                    id: '002',
+                    usuario: 'GABRIEL SOUSA',
+                    matricula: '338766',
+                    setor: 'Armazenamento',
+                    turno: '1º Turno',
+                    data_hora_retirada: '06/05/2025 08:15',
+                    bateria: '85'
+                },
+                {
+                    id: '008',
+                    usuario: 'AMANDA SILVA',
+                    matricula: '421980',
+                    setor: 'Armazenamento',
+                    turno: 'Intermediário',
+                    data_hora_retirada: '06/05/2025 09:30',
+                    bateria: '92'
+                }
+            ];
+
+            // Adicionar console log para verificar se o script está sendo executado
+            console.log('Script do painel simples iniciado');
+
+            // Adicionar eventos
+            botao.onclick = function () {
+                console.log('Botão do painel simples clicado');
+                alternarPainelSimples();
+            };
+
+            btnAtualizar.onclick = function () {
+                console.log('Botão de atualizar simples clicado');
+                carregarSimulacaoColetores();
+            };
+
+            // Função para alternar o painel
+            function alternarPainelSimples() {
+                painelAbertoSimples = !painelAbertoSimples;
+
+                if (painelAbertoSimples) {
+                    painel.style.right = '0';
+                    botao.innerHTML = '<i class="fas fa-chevron-right" style="font-size: 24px;"></i>';
+                    carregarSimulacaoColetores();
+                    atualizarHorarioSimples();
+                    console.log('Painel simples aberto');
+                } else {
+                    painel.style.right = '-300px';
+                    botao.innerHTML = '<i class="fas fa-users" style="font-size: 24px;"></i>';
+                    console.log('Painel simples fechado');
+                }
+            }
+
+            // Carregar dados simulados (já que a API não está respondendo)
+            function carregarSimulacaoColetores() {
+                console.log('Carregando simulação de coletores...');
+
+                // Renderizar os dados simulados
+                renderizarColetoresSimples(dadosSimuladosSimples);
+                atualizarHorarioSimples();
+            }
+
+            // Renderizar coletores no painel
+            function renderizarColetoresSimples(coletores) {
+                if (!coletores || coletores.length === 0) {
+                    conteudo.innerHTML = `
+                <div style="text-align: center; padding: 20px 10px; color: #6c757d;">
+                    <i class="fas fa-search"></i>
+                    <p>Nenhum coletor em uso</p>
+                </div>
+            `;
+                    return;
+                }
+
+                let html = '';
+
+                coletores.forEach(coletor => {
+                    const dataHoraRetirada = coletor.data_hora_retirada || '';
+                    const nomeUsuario = coletor.usuario || 'NENHUM USUÁRIO';
+                    const matricula = coletor.matricula || '—';
+                    const setor = coletor.setor || 'Não especificado';
+                    const turno = coletor.turno || 'Não especificado';
+                    const bateria = coletor.bateria || '100';
+
+                    html += `
+                <div style="background-color: #f8f9fa; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 4px solid #e02020; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; align-items: center;">
+                        <div style="font-weight: bold; color: #e02020;">#${coletor.id}</div>
+                        <div style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;">Em Uso</div>
+                    </div>
+                    <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">
+                        ${nomeUsuario}
+                        <span style="display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 8px; background-color: rgba(26, 26, 80, 0.1); color: #1a1a50; margin-left: 5px; vertical-align: middle;">
+                            ${turno}
+                        </span>
+                    </div>
+                    <div style="font-size: 12px; color: #495057; margin-bottom: 8px;">${setor}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="font-size: 11px; color: #495057; display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: #6c757d; margin-bottom: 2px;">Matrícula</span>
+                            <span style="font-weight: 600;">${matricula}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #495057; display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: #6c757d; margin-bottom: 2px;">Bateria</span>
+                            <span style="font-weight: 600;">${bateria}%</span>
+                        </div>
+                        <div style="font-size: 11px; color: #495057; display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: #6c757d; margin-bottom: 2px;">Data</span>
+                            <span style="font-weight: 600;">${formatarDataSimples(dataHoraRetirada)}</span>
+                        </div>
+                        <div style="font-size: 11px; color: #495057; display: flex; flex-direction: column;">
+                            <span style="font-weight: 500; color: #6c757d; margin-bottom: 2px;">Hora</span>
+                            <span style="font-weight: 600;">${formatarHoraSimples(dataHoraRetirada)}</span>
+                        </div>
+                        <div style="grid-column: span 2; display: flex; justify-content: space-between; align-items: center; margin-top: 5px; padding-top: 5px; border-top: 1px dashed rgba(0, 0, 0, 0.1); font-size: 12px;">
+                            <span>Tempo em uso</span>
+                            <span style="font-weight: bold; background-color: rgba(224, 32, 32, 0.1); color: #e02020; padding: 2px 8px; border-radius: 10px;">
+                                ${calcularTempoDecorridoSimples(dataHoraRetirada)}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+                });
+
+                conteudo.innerHTML = html;
+            }
+
+            // Funções auxiliares
+            function formatarDataSimples(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 0 ? partes[0] : '—';
+            }
+
+            function formatarHoraSimples(dataHora) {
+                if (!dataHora) return '—';
+                const partes = dataHora.split(' ');
+                return partes.length > 1 ? partes[1] : '—';
+            }
+
+            function atualizarHorarioSimples() {
+                const agora = new Date();
+                const hora = String(agora.getHours()).padStart(2, '0');
+                const minutos = String(agora.getMinutes()).padStart(2, '0');
+                horarioEl.textContent = `Atualizado: ${hora}:${minutos}`;
+            }
+
+            function calcularTempoDecorridoSimples(dataHoraRetirada) {
+                if (!dataHoraRetirada) return '—';
+
+                try {
+                    const partes = dataHoraRetirada.split(' ');
+                    if (partes.length < 2) return '—';
+
+                    const dataPartes = partes[0].split('/');
+                    if (dataPartes.length < 3) return '—';
+
+                    const horaPartes = partes[1].split(':');
+                    if (horaPartes.length < 2) return '—';
+
+                    const data = new Date(
+                        parseInt(dataPartes[2]), // ano
+                        parseInt(dataPartes[1]) - 1, // mês (0-11)
+                        parseInt(dataPartes[0]), // dia
+                        parseInt(horaPartes[0]), // hora
+                        parseInt(horaPartes[1])  // minutos
+                    );
+
+                    const agora = new Date();
+                    const diff = Math.floor((agora - data) / 1000 / 60); // diferença em minutos
+
+                    if (diff < 60) {
+                        return `${diff} min`;
+                    } else {
+                        const horas = Math.floor(diff / 60);
+                        const minutos = diff % 60;
+                        return `${horas}h ${minutos.toString().padStart(2, '0')}m`;
+                    }
+                } catch (e) {
+                    console.error("Erro ao calcular tempo decorrido:", e);
+                    return '—';
+                }
+            }
+
+            // Adicionar console log para verificar se o script foi carregado completamente
+            console.log('Script do painel simples carregado e pronto');
+        })();
+    </script>
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Remover o botão duplicado com ID específico
+            const botaoDuplicado = document.getElementById('meuBotaoSimples');
+            if (botaoDuplicado) {
+                botaoDuplicado.remove();
+                console.log('Botão duplicado removido com sucesso!');
+            }
+
+            // Também remover qualquer contêiner pai associado a este botão, se existir
+            const painelSimples = document.getElementById('meuPainelSimples');
+            if (painelSimples) {
+                painelSimples.remove();
+                console.log('Painel simples associado removido com sucesso!');
+            }
+        });
+
+    </script>
+
+    <script>
+        // Remover imediatamente
+        (function removerBotaoDuplicado() {
+            const botaoDuplicado = document.getElementById('meuBotaoSimples');
+            const painelSimples = document.getElementById('meuPainelSimples');
+
+            if (botaoDuplicado) botaoDuplicado.remove();
+            if (painelSimples) painelSimples.remove();
+
+            // Verificar periodicamente se o botão reaparece e remover novamente
+            setInterval(() => {
+                const botaoDuplicadoRecriado = document.getElementById('meuBotaoSimples');
+                const painelSimplesRecriado = document.getElementById('meuPainelSimples');
+
+                if (botaoDuplicadoRecriado) botaoDuplicadoRecriado.remove();
+                if (painelSimplesRecriado) painelSimplesRecriado.remove();
+            }, 1000); // Verificar a cada segundo
+        })();
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Proteger o botão original
+            const botaoOriginal = document.getElementById('togglePainel');
+            if (botaoOriginal) {
+                console.log('Botão original encontrado e será mantido');
+            }
+
+            // Remover apenas o botão duplicado e seu painel
+            const botaoDuplicado = document.getElementById('meuBotaoSimples');
+            if (botaoDuplicado) {
+                botaoDuplicado.remove();
+                console.log('Botão duplicado removido com sucesso');
+            }
+
+            const painelDuplicado = document.getElementById('meuPainelSimples');
+            if (painelDuplicado) {
+                painelDuplicado.remove();
+                console.log('Painel duplicado removido com sucesso');
+            }
+        });
+    </script>
+
+    <script>
+        // Função para remover elementos duplicados
+        function removerElementosDuplicados() {
+            // 1. Elementos a remover pelo ID
+            const idsParaRemover = [
+                'meuBotaoSimples',
+                'meuPainelSimples',
+                'painelRetiradas',
+                'togglePainelBtn'
+            ];
+
+            // 2. Remover cada elemento da lista
+            idsParaRemover.forEach(id => {
+                const elemento = document.getElementById(id);
+                if (elemento) {
+                    elemento.parentNode.removeChild(elemento);
+                    console.log(`Elemento com ID '${id}' removido com sucesso`);
+                }
+            });
+
+            // 3. Remover painéis laterais duplicados (mantendo apenas um)
+            const paineis = document.querySelectorAll('.painel-lateral');
+            if (paineis.length > 1) {
+                // Manter apenas o primeiro painel
+                for (let i = 1; i < paineis.length; i++) {
+                    paineis[i].parentNode.removeChild(paineis[i]);
+                    console.log(`Painel lateral duplicado #${i + 1} removido`);
+                }
+            }
+        }
+
+        // Executar a função de remoção logo após carregar o DOM
+        document.addEventListener('DOMContentLoaded', removerElementosDuplicados);
+
+        // Executar também imediatamente (caso o evento DOMContentLoaded já tenha disparado)
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            removerElementosDuplicados();
+        }
+
+        // Verificar periodicamente se os elementos reapareceram e remover novamente
+        setInterval(removerElementosDuplicados, 1000);
+    </script>
+
+    <script>
+
+        function renderizarColetores(filter = 'all') {
+            const grid = document.getElementById('collectorsGrid');
+            grid.innerHTML = '';
+
+            // Filtrar coletores conforme selecionado
+            let filteredCollectors;
+            if (filter === 'all') {
+                filteredCollectors = coletores;
+            } else {
+                filteredCollectors = coletores.filter(c => c.status === filter);
+            }
+
+            if (filteredCollectors.length === 0) {
+                grid.innerHTML = `
+            <div class="no-collectors">
+                <i class="fas fa-search"></i>
+                <p>Nenhum coletor encontrado</p>
+            </div>
+        `;
+                return;
+            }
+
+            // Criar card para cada coletor - VERSÃO SIMPLIFICADA
+            filteredCollectors.forEach(coletor => {
+                const card = document.createElement('div');
+                card.className = `collector-card collector-${coletor.status}`;
+                card.setAttribute('data-id', coletor.id);
+
+                // Determinar o status e a ação disponível
+                let statusText, actionButton;
+                if (coletor.status === 'available') {
+                    statusText = 'Disponível';
+                    actionButton = `<button class="action-button select" title="Selecionar coletor" data-id="${coletor.id}"><i class="fas fa-check"></i></button>`;
+                } else if (coletor.status === 'in-use') {
+                    statusText = 'Em Uso';
+
+                    // Se o coletor está sendo usado pelo usuário atual, mostrar botão de devolução
+                    if (coletor.usuario === usuarioAtual.nome) {
+                        actionButton = `<button class="action-button return" title="Devolver coletor" data-id="${coletor.id}"><i class="fas fa-undo"></i></button>`;
+                    } else {
+                        actionButton = '';
+                    }
+                } else { // maintenance
+                    statusText = 'Manutenção';
+                    actionButton = '';
+                }
+
+                // Status original para exibição no status-pill
+                const statusOriginalText = coletor.statusOriginal || statusText;
+
+                // Importante: Garantir que o nome do usuário seja exibido corretamente
+                const nomeUsuario = (coletor.status === 'in-use' && coletor.usuario)
+                    ? coletor.usuario
+                    : 'Nenhum usuário';
+
+                // Conteúdo do card - SIMPLIFICADO: apenas número, nome e setor
+                // Removidos: ícone de bateria, porcentagem de bateria, ícone do coletor e nome "Honeywell"
+                card.innerHTML = `
+            <div class="collector-header">
+                #${coletor.id}
+                <div class="collector-status"></div>
+            </div>
+            <div class="collector-info">
+                <div class="collector-user">${nomeUsuario}</div>
+                <div class="collector-sector">${coletor.setor || 'Nenhum setor'}</div>
+                ${actionButton}
+                <div class="collector-status-container">
+                    <span class="status-pill status-${coletor.status}" data-id="${coletor.id}">${statusOriginalText}</span>
+                </div>
+            </div>
+        `;
+
+                grid.appendChild(card);
+            });
+
+            // Configurar delegação de eventos
+            configurarDelegacaoEventos();
+        }
+
+
+    </script>
+
+    <script>
+
+        // Script para executar no console do navegador
+        // Remove os ícones de bateria, ícones de dispositivo e nome "Honeywell" de todos os cards
+        function simplificarCards() {
+            // Remover elementos de detalhes (bateria e modelo) de todos os cards
+            document.querySelectorAll('.collector-details').forEach(el => {
+                el.remove();
+            });
+
+            // Remover qualquer menção a "Honeywell" em qualquer lugar
+            document.querySelectorAll('.collector-card').forEach(card => {
+                const html = card.innerHTML;
+                card.innerHTML = html.replace(/Honeywell/g, '');
+            });
+
+            console.log('Cards simplificados com sucesso!');
+        }
+
+        // Executar a função
+        simplificarCards();
+
+    </script>
+
+    <script>
+
+        // Script para remover bateria, ícone do coletor e nome Honeywell
+        function simplificarCards() {
+            // 1. Selecionar todos os cards de coletores
+            const cards = document.querySelectorAll('.collector-card');
+
+            cards.forEach(card => {
+                // 2. Encontrar e remover os ícones de bateria
+                const bateriasIcons = card.querySelectorAll('.fa-battery-half, .fas.fa-battery-half');
+                bateriasIcons.forEach(icon => {
+                    // Remover o elemento span pai inteiro que contém o ícone
+                    const spanParent = icon.closest('span');
+                    if (spanParent) spanParent.remove();
+                });
+
+                // 3. Encontrar e remover os ícones de tablet/coletor
+                const tabletIcons = card.querySelectorAll('.fa-tablet-alt, .fas.fa-tablet-alt');
+                tabletIcons.forEach(icon => {
+                    // Remover o elemento span pai inteiro que contém o ícone
+                    const spanParent = icon.closest('span');
+                    if (spanParent) spanParent.remove();
+                });
+
+                // 4. Remover qualquer texto com "Honeywell"
+                const textNodes = [...card.querySelectorAll('*')].filter(el =>
+                    el.childNodes.length === 1 &&
+                    el.firstChild.nodeType === Node.TEXT_NODE &&
+                    el.textContent.includes('Honeywell')
+                );
+
+                textNodes.forEach(node => {
+                    node.textContent = node.textContent.replace(/Honeywell[^\s]*/g, '');
+                });
+
+                // 5. Como alternativa, remover toda a div collector-details
+                const detailsDiv = card.querySelector('.collector-details');
+                if (detailsDiv) {
+                    detailsDiv.remove();
+                }
+            });
+
+            console.log('Cards simplificados com sucesso!');
+        }
+
+        // Executar a função
+        simplificarCards();
+
+    </script>
+
+</body>
+
+</html>

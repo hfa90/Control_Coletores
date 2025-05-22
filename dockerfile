@@ -3,7 +3,7 @@
 FROM python:3.9-slim
 
 # Metadados
-LABEL maintainer="Gabriel Sousa <gabriel@exemplo.com>"
+LABEL maintainer="Hayden Fernandes <haydenfernandes.ti@exemplo.com>"
 LABEL description="Sistema de Controle de Coletores para Centro de Distribuição"
 LABEL version="1.0"
 

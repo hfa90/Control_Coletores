@@ -7,11 +7,11 @@ Obrigado por considerar contribuir para o Sistema de Controle de Coletores! Este
 ### 1. Fork do Repositório
 ```bash
 # Clone seu fork
-git clone https://github.com/SEU-USUARIO/sistema-coletores.git
+git clone https://github.com/hf90/sistema-coletores.git
 cd sistema-coletores
 
 # Adicione o repositório original como upstream
-git remote add upstream https://github.com/USUARIO-ORIGINAL/sistema-coletores.git
+git remote add upstream https://github.com/hf90/sistema-coletores.git
 ```
 
 ### 2. Configuração do Ambiente de Desenvolvimento

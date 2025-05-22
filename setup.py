@@ -19,7 +19,7 @@ setup(
     description="Sistema de controle e gerenciamento de coletores de código de barras",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/seu-usuario/sistema-coletores",
+    url="https://github.com/hf90/sistema-coletores",
     project_urls={
         "Bug Tracker": "https://github.com/hf90/sistema-coletores/issues",
         "Documentation": "https://github.com/hf90/sistema-coletores/wiki",

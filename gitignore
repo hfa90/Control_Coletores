@@ -1,0 +1,131 @@
+# Sistema de Controle de Coletores - .gitignore
+
+# Arquivos de configuração sensíveis
+config.py
+config.json
+.env
+.env.local
+.env.production
+
+# Arquivos de banco de dados
+*.db
+*.sqlite
+*.sqlite3
+backups/
+
+# Credenciais e chaves
+secrets.py
+keys/
+certificates/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Flask
+instance/
+.webassets-cache
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Logs
+*.log
+logs/
+log/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Upload directories
+uploads/
+files/
+
+# Static files compilados
+static/compiled/
+static/build/
+
+# Cache directories
+.cache/
+cache/
+
+# Node modules (se usar algum frontend build)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentação gerada
+docs/_build/
+site/
+
+# Arquivos de sessão
+flask_session/
+
+# Arquivos de migração específicos do ambiente
+migrations/versions/
+
+# Arquivos específicos do sistema
+sistema_local.py
+config_local.py

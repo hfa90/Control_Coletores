@@ -54,7 +54,7 @@ def iniciar_servidor():
         # Importar o servidor apenas depois de verificar a conexão com o BD
         from servidor_sistema import app
         
-        host = '192.168.1.6'
+        host = '192.168.x.x'
         porta = 5000
         
         # Verificar se a porta está disponível
